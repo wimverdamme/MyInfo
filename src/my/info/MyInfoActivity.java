@@ -14,6 +14,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -109,7 +111,8 @@ public class MyInfoActivity extends Activity {
 					try {
 						list = mgr.list(path);
 						for (String f : list)
-							if (f.toLowerCase().endsWith(".csv")) {
+							if (f.toLowerCase().endsWith(".csv")) 
+							{
 
 								// ((TextView)
 								// findViewById(R.id.SelectedFile)).setText(f);
@@ -155,6 +158,8 @@ public class MyInfoActivity extends Activity {
 										tv2.setText(text2);
 									}
 								});
+								if (DebugMode)
+									break;
 							}
 
 					} catch (Exception e) {
@@ -174,5 +179,20 @@ public class MyInfoActivity extends Activity {
 		}
 
 	}
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+     menu.add("Debug-mode").setCheckable(true);
+     menu.getItem(0).setChecked(DebugMode);
+     return true;
+    }
+	private boolean DebugMode=false;
+	@Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+     DebugMode=!item.isChecked();
+     item.setChecked(DebugMode);
+     return super.onOptionsItemSelected(item);
+    }
 
 }
