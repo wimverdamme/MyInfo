@@ -1,4 +1,4 @@
 MyInfo
 ======
 
-Android gps project
+Android gps project.
