@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="LabelStart">Start?</string>
+    <string name="app_name">MyInfo</string>
+    <string name="LabelYes">Yes</string>
+    <string name="LabelNo">No</string>
+    <string name="LabelAll">All</string>
+    <string name="ChargerConnected">ChargerConnected</string>
+    <string name="Extended">Extended</string>
+    <string name="LocationEnabled">LocationEnabled</string>
+    <string name="Longitude">Longitude</string>
+    <string name="Latitude">Latitude</string>
+    <string name="Altitude">Altitude</string>
+    <string name="Accuracy">Accuracy</string>
+    <string name="UpdateTime">UpdateTime</string>
+    <string name="Plugged">Plugged</string>
+    <string name="Unplugged">Unplugged</string>
+    <string name="Convert">Convert</string>
+    <string name="Distance">Distance</string>
+    <string name="Direction">Direction</string>
+    <string name="Type">Type</string>
+    <string name="Save">Save</string>
+    <string name="Load">Load</string>
+    <string name="Speed">Speed</string>
+
+</resources>

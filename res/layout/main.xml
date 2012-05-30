@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/LabelStart" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/ButtonYes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="onButtonYesClick"
+                android:text="@string/LabelYes" />
+
+            <Button
+                android:id="@+id/ButtonNo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="onButtonNoClick"
+                android:text="@string/LabelNo" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/ButtonAll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onButtonAllClick"
+        android:text="@string/LabelAll" 
+        
+        android:textColor="#010101" android:textColorHighlight="#010101" android:background="#010101"/>
+
+    <Button
+        android:id="@+id/ButtonConvert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/Convert"
+        android:onClick="onButtonConvertClick"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/SaveButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/Save"
+            android:onClick="onButtonSaveClick"/>
+
+        <Button
+            android:id="@+id/LoadButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/Load"
+            android:onClick="onButtonLoadClick" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+    <TextView
+            android:id="@+id/SelectedFile"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+    <TextView
+            android:id="@+id/NrOfPoisFound"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+    </LinearLayout>
+</LinearLayout>
