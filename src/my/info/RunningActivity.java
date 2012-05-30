@@ -17,7 +17,6 @@ import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.BatteryManager;
 import android.os.Bundle;
-import android.text.format.Time;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TableRow;

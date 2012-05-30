@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.TextView;
 
 public class ArrowDirectionView extends TextView
