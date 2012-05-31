@@ -98,6 +98,7 @@ public class MyInfoActivity extends Activity {
 	public void onButtonConvertClick(View view) {
 
 		if (!Converting) {
+			PoiList.clear();
 			Converting = true;
 
 			new Thread(new Runnable() {
@@ -179,20 +180,35 @@ public class MyInfoActivity extends Activity {
 		}
 
 	}
+	final int DebugModeMenuItemId=0;
+	final int ExitMenuItemId=1;
 	@Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-     menu.add("Debug-mode").setCheckable(true);
-     menu.getItem(0).setChecked(DebugMode);
-     return true;
+		MenuItem DebugModeItem=menu.add(Menu.NONE,DebugModeMenuItemId,Menu.NONE,R.string.Debugmode);
+		DebugModeItem.setCheckable(true);
+		DebugModeItem.setChecked(DebugMode);
+		
+		menu.add(Menu.NONE,ExitMenuItemId,Menu.NONE,R.string.Exit);
+	    return true;
     }
 	private boolean DebugMode=false;
 	@Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-     DebugMode=!item.isChecked();
-     item.setChecked(DebugMode);
-     return super.onOptionsItemSelected(item);
+		switch (item.getItemId())
+		{
+			case DebugModeMenuItemId:				
+				DebugMode=!item.isChecked();
+				item.setChecked(DebugMode);
+				break;
+			case ExitMenuItemId:
+				System.exit(0);
+				break;
+		}
+
+			
+		return super.onOptionsItemSelected(item);
     }
 
 }

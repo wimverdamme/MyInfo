@@ -28,6 +28,7 @@ public class ArrowDirectionView extends TextView
 	{
 		mPaint = new Paint();
 		mPaint.setColor(0xFF00FF00);
+		mPaint.setStrokeWidth(3);
 	}
 	@Override
 	protected void onDraw(Canvas canvas) {

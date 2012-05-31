@@ -23,5 +23,11 @@
     <string name="Save">Save</string>
     <string name="Load">Load</string>
     <string name="Speed">Speed</string>
+    <string name="Debugmode">Debugmode</string>
+    <string name="Exit">Exit</string>
+    <string name="Continuousmode">Continuousmode</string>
+    <string name="Resize">Resize</string>
+    
+    
 
 </resources>
