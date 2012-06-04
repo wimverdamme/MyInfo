@@ -195,9 +195,8 @@ public class RunningActivity extends Activity {
 				    && (results[0] / speed < 5)
 					&& (lastBeep + 5000 < now || lastBeepPoi !=p)) 
 				{
-					final ToneGenerator tg = new ToneGenerator(
-							AudioManager.STREAM_NOTIFICATION, 100);
-					tg.startTone(ToneGenerator.TONE_PROP_BEEP);
+					final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+					tg.startTone(ToneGenerator.TONE_PROP_BEEP2);
 					lastBeep = now;
 					lastBeepPoi=p;
 					((TextView) findViewById(R.id.ExtendedValue)).setText(sdf.format(date));
