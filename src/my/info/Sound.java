@@ -5,17 +5,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import android.content.Context;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.util.Log;
 
 public class Sound {
 	@SuppressWarnings("rawtypes")
-	private static HashMap soundPoolMap;
-	private static SoundPool soundPool;
+	private static HashMap soundPoolMap=null;
+	private static SoundPool soundPool=null;
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public List<String> initSounds() {
+	public List<String> initSounds(Context context) {
 		List<String> retVal = new ArrayList<String>();
 		soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 100);
 		soundPoolMap = new HashMap(3);
@@ -26,7 +27,7 @@ public class Sound {
 		for (Field field : fields) {
 			try {
 				soundPoolMap
-						.put(i, soundPool.load(this, field.getInt(null), i));
+						.put(i, soundPool.load(context, field.getInt(null), i));
 				retVal.add(field.getName());
 				i++;
 				Log.i("REFLECTION",
@@ -43,7 +44,7 @@ public class Sound {
 
 	public void playSound(int soundID) {
 		if (soundPool == null || soundPoolMap == null) {
-			initSounds();
+			return;
 		}
 		float volume = (float) 1.0;
 

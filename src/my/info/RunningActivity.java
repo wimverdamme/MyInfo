@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -22,7 +23,6 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -45,6 +45,7 @@ public class RunningActivity extends Activity {
 	private boolean isPlugged = false;
 	private ArrayList<Poi> PoiList = MyInfoActivity.PoiList;
 	private ArrowDirectionView Arrow;
+	private Sound sound;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -111,8 +112,11 @@ public class RunningActivity extends Activity {
 		
 		int visible = extended ? View.VISIBLE : View.INVISIBLE;
 		Visibility(visible);
+		sound=new Sound();
+		sound.initSounds(this);
 
 	}
+
 
 	public void Visibility(int visible ) 
 	{
@@ -138,7 +142,7 @@ public class RunningActivity extends Activity {
 	private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context arg0, Intent intent) {
-			// TODO Auto-generated method stub
+	
 			int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
 			isPlugged = (plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB);
 			((TextView) findViewById(R.id.ChargerConnectedValue))
@@ -229,9 +233,9 @@ public class RunningActivity extends Activity {
 				long now = System.currentTimeMillis();
 				if ((speed > 0) && (results[0] / speed < WarningSecs)
 						&& (lastBeep + 5000 < now || lastBeepPoi != p)) {
-					final ToneGenerator tg = new ToneGenerator(
-							AudioManager.STREAM_NOTIFICATION, 100);
-					tg.startTone(ToneGenerator.TONE_PROP_BEEP2);
+					
+					sound.playSound(0);
+					
 					lastBeep = now;
 					lastBeepPoi = p;
 					((TextView) findViewById(R.id.ExtendedValue)).setText(sdf
@@ -273,17 +277,17 @@ public class RunningActivity extends Activity {
 		}
 
 		public void onProviderDisabled(String provider) {
-			// TODO Auto-generated method stub
+			
 
 		}
 
 		public void onProviderEnabled(String provider) {
-			// TODO Auto-generated method stub
+		
 
 		}
 
 		public void onStatusChanged(String provider, int status, Bundle extras) {
-			// TODO Auto-generated method stub
+			
 
 		}
 
@@ -363,7 +367,6 @@ public class RunningActivity extends Activity {
 				public void onClick(View v) {
 					View parent = (View) v.getParent();
 
-					View bla = parent.findViewById(R.id.Value);
 					String Info = ((TextView) parent.findViewById(R.id.Value)).getText().toString();
 					try{
 						m_factor=Float.parseFloat(Info);
