@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -24,6 +26,9 @@ import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TableRow;
 import android.widget.TextView;
 
@@ -44,14 +49,17 @@ public class RunningActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		setContentView(R.layout.running);
 		extended = getIntent().getExtras().getBoolean("Extended");
 		((TextView) findViewById(R.id.ExtendedValue)).setText(this
 				.getResources().getText(
 						extended ? R.string.LabelYes : R.string.LabelNo));
 
-		locManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-		dummylocmanager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+		locManager = (LocationManager) this
+				.getSystemService(Context.LOCATION_SERVICE);
+		dummylocmanager = (LocationManager) this
+				.getSystemService(Context.LOCATION_SERVICE);
 		try {
 			gps_enabled = locManager
 					.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -77,7 +85,8 @@ public class RunningActivity extends Activity {
 			locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
 					0, locListener);
 			dummylocmanager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, 3600000, 100000, dummyloclistener);
+					LocationManager.GPS_PROVIDER, 3600000, 100000,
+					dummyloclistener);
 
 		} else if (network_enabled) {
 			locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
@@ -86,8 +95,27 @@ public class RunningActivity extends Activity {
 
 		this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(
 				Intent.ACTION_BATTERY_CHANGED));
+	
 
+		Arrow = new ArrowDirectionView(this);
+		((TableRow) findViewById(R.id.DirectionRow)).addView(Arrow);
+
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+		mPrefs = getPreferences(MODE_PRIVATE);
+		m_factor = mPrefs.getFloat("SizeFactor", 1);
+		changeSize((ViewGroup) findViewById(R.id.Running), m_factor);
+
+		ContinuousMode = mPrefs.getBoolean("ContinuousMode", false);
+		WarningSecs = mPrefs.getInt("WarningSecs", 5);
+		
 		int visible = extended ? View.VISIBLE : View.INVISIBLE;
+		Visibility(visible);
+
+	}
+
+	public void Visibility(int visible ) 
+	{
 
 		findViewById(R.id.ChargerConnected).setVisibility(visible);
 		findViewById(R.id.ChargerConnectedValue).setVisibility(visible);
@@ -97,14 +125,14 @@ public class RunningActivity extends Activity {
 		findViewById(R.id.DirectionNumericValue).setVisibility(visible);
 		findViewById(R.id.Separation1).setVisibility(visible);
 		findViewById(R.id.Separation2).setVisibility(visible);
-
+		findViewById(R.id.Speed).setVisibility(visible);
+		findViewById(R.id.SpeedValue).setVisibility(visible);
+		findViewById(R.id.Type).setVisibility(visible);
+		findViewById(R.id.TypeValue).setVisibility(visible);
 		findViewById(R.id.DirectionArrow).setVisibility(visible);
-
-		Arrow = new ArrowDirectionView(this);
-		((TableRow) findViewById(R.id.DirectionRow)).addView(Arrow);
-
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
+		Arrow.setVisibility(visible);
+		
+		
 	}
 
 	private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver() {
@@ -115,7 +143,16 @@ public class RunningActivity extends Activity {
 			isPlugged = (plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB);
 			((TextView) findViewById(R.id.ChargerConnectedValue))
 					.setText(getResources().getText(
-							isPlugged ? R.string.Plugged : R.string.Unplugged) + " "+plugged);
+							isPlugged ? R.string.Plugged : R.string.Unplugged)
+							+ " " + plugged);
+			if (extended && plugged==0)
+			{
+				extended=false;
+				((TextView)findViewById(R.id.ExtendedValue)).setText(R.string.LabelNo);
+			}
+			int visible = (extended&&plugged!=0) ? View.VISIBLE : View.INVISIBLE;
+			Visibility(visible);		
+			
 		}
 	};
 
@@ -142,8 +179,8 @@ public class RunningActivity extends Activity {
 			lastBeep = System.currentTimeMillis() - 6000;
 		}
 
-		long lastBeep=0;
-		Poi lastBeepPoi=null;
+		long lastBeep = 0;
+		Poi lastBeepPoi = null;
 
 		public void onLocationChanged(Location location) {
 			if (location != null) {
@@ -165,8 +202,7 @@ public class RunningActivity extends Activity {
 				date.setTime(location.getTime());
 				// Time time = new Time();
 				// time.set(location.getTime());
-				SimpleDateFormat sdf = new SimpleDateFormat(
-						"HH:mm:ss");
+				SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
 				((TextView) findViewById(R.id.UpdateTimeValue)).setText(sdf
 						.format(date));
@@ -188,26 +224,30 @@ public class RunningActivity extends Activity {
 
 				float speed = location.getSpeed();
 				((TextView) findViewById(R.id.SpeedValue)).setText(df
-						.format(speed*3.6));
+						.format(speed * 3.6));
 
 				long now = System.currentTimeMillis();
-				if (   (speed > 0) 
-				    && (results[0] / speed < 5)
-					&& (lastBeep + 5000 < now || lastBeepPoi !=p)) 
-				{
-					final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+				if ((speed > 0) && (results[0] / speed < WarningSecs)
+						&& (lastBeep + 5000 < now || lastBeepPoi != p)) {
+					final ToneGenerator tg = new ToneGenerator(
+							AudioManager.STREAM_NOTIFICATION, 100);
 					tg.startTone(ToneGenerator.TONE_PROP_BEEP2);
 					lastBeep = now;
-					lastBeepPoi=p;
-					((TextView) findViewById(R.id.ExtendedValue)).setText(sdf.format(date));
+					lastBeepPoi = p;
+					((TextView) findViewById(R.id.ExtendedValue)).setText(sdf
+							.format(date));
 				}
 
-				if (gps_enabled) 
-				{
-					locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, ContinuousMode ? 0: 15000, ContinuousMode ? 0 : results[0] / 3, locListener);
-				} else if (network_enabled) 
-				{
-					locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,ContinuousMode ? 0 : 15000, ContinuousMode ? 0: results[0] / 3, locListener);
+				if (gps_enabled) {
+					locManager.requestLocationUpdates(
+							LocationManager.GPS_PROVIDER, ContinuousMode ? 0
+									: 15000, ContinuousMode ? 0
+									: results[0] / 3, locListener);
+				} else if (network_enabled) {
+					locManager.requestLocationUpdates(
+							LocationManager.NETWORK_PROVIDER,
+							ContinuousMode ? 0 : 15000, ContinuousMode ? 0
+									: results[0] / 3, locListener);
 				}
 
 			}
@@ -265,22 +305,21 @@ public class RunningActivity extends Activity {
 		}
 	}
 
-	
-	public enum MenuItemIds { ContinuousModeMenuItemId, ResizeText, ExitMenuItemId,Resize,Larger,Smaller}
+	public enum MenuItemIds {
+		ContinuousModeMenuItemId, ResizeText, ExitMenuItemId, Resize, WarningSecs
+	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {	
-		MenuItem ContinuousModeItem = menu.add(Menu.NONE,MenuItemIds.ContinuousModeMenuItemId.ordinal(), Menu.NONE, R.string.Continuousmode);
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuItem ContinuousModeItem = menu.add(Menu.NONE,
+				MenuItemIds.ContinuousModeMenuItemId.ordinal(), Menu.NONE,
+				R.string.Continuousmode);
 		ContinuousModeItem.setCheckable(true);
 		ContinuousModeItem.setChecked(ContinuousMode);
-		
-		
-		SubMenu ResizeSubMenu= menu.addSubMenu(Menu.NONE,MenuItemIds.Resize.ordinal(),Menu.NONE,R.string.Resize);
-		
-		ResizeSubMenu.add(Menu.NONE,MenuItemIds.Larger.ordinal(),Menu.NONE,"Larger");
-		ResizeSubMenu.add(Menu.NONE,MenuItemIds.Smaller.ordinal(),Menu.NONE,"Smaller");		
 
-		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE, R.string.Exit);
+		menu.add(Menu.NONE, MenuItemIds.Resize.ordinal(), Menu.NONE,R.string.Resize);
+		menu.add(Menu.NONE, MenuItemIds.WarningSecs.ordinal(), Menu.NONE,R.string.WarningSecs);
+		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE,R.string.Exit);
 		return true;
 	}
 
@@ -288,39 +327,127 @@ public class RunningActivity extends Activity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		Button button ;
+		EditText et;
+		oldfactor=m_factor;
 		switch (MenuItemIds.values()[item.getItemId()]) {
 		case ContinuousModeMenuItemId:
 			ContinuousMode = !item.isChecked();
 			item.setChecked(ContinuousMode);
 			break;
 		case ExitMenuItemId:
+			locManager.removeUpdates(locListener);
+			dummylocmanager.removeUpdates(dummyloclistener);
+			finish();
+			break;
+		case Resize:
+			popUp = new Dialog(RunningActivity.this);
+			popUp.setContentView(R.layout.popupdialog);
+			popUp.setTitle("Input");
+			popUp.setCancelable(true);			
 			
-			System.exit(0);
+			et=(EditText) popUp.findViewById(R.id.Value);
+			et.setInputType(android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL );			
+			et.setText(""+m_factor);
+			
+			button = (Button) popUp.findViewById(R.id.CloseButton);
+			button.setOnClickListener(new OnClickListener() {
+
+				public void onClick(View v) {
+					popUp.dismiss();
+				}
+			});
+			button = (Button) popUp.findViewById(R.id.OkButton);
+			button.setOnClickListener(new OnClickListener() {
+
+				public void onClick(View v) {
+					View parent = (View) v.getParent();
+
+					View bla = parent.findViewById(R.id.Value);
+					String Info = ((TextView) parent.findViewById(R.id.Value)).getText().toString();
+					try{
+						m_factor=Float.parseFloat(Info);
+					}catch (NumberFormatException e){}
+
+					popUp.dismiss();
+					float newfactor = m_factor/oldfactor;
+					changeSize((ViewGroup) findViewById(R.id.Running), newfactor);
+					
+				}
+			});
+			
+			popUp.show();			
 			break;
-		case Larger:			
-			changeSize((ViewGroup)findViewById(R.id.Running),(float)1.1);
-			break;
-		case Smaller:			
-			changeSize((ViewGroup)findViewById(R.id.Running),1/(float)1.1);
+
+		case WarningSecs:
+
+			popUp = new Dialog(RunningActivity.this);
+			popUp.setContentView(R.layout.popupdialog);
+			popUp.setTitle("Input");
+			popUp.setCancelable(true);			
+			
+			et=(EditText) popUp.findViewById(R.id.Value);
+			et.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);			
+			et.setText(""+WarningSecs);
+			
+			button = (Button) popUp.findViewById(R.id.CloseButton);
+			button.setOnClickListener(new OnClickListener() {
+
+				public void onClick(View v) {
+					popUp.dismiss();
+				}
+			});
+			button = (Button) popUp.findViewById(R.id.OkButton);
+			button.setOnClickListener(new OnClickListener() {
+
+				public void onClick(View v) {
+					View parent = (View) v.getParent();
+					String Info = ((TextView) parent.findViewById(R.id.Value)).getText().toString();
+					try{
+					WarningSecs=Integer.parseInt(Info);
+					}catch (NumberFormatException e){}
+
+					popUp.dismiss();
+				}
+			});
+
+			popUp.show();
+
 			break;
 		}
 
 		return super.onOptionsItemSelected(item);
 	}
-	
-	private void changeSize(ViewGroup viewgroup,float factor)
-	{
-		for (int i = 0; i < viewgroup.getChildCount(); i++) {			
-	        View v = viewgroup.getChildAt(i);
-	       
-	        Class<? extends View> c = v.getClass();
-	        if (v instanceof ViewGroup)
-	        	changeSize((ViewGroup)v,factor);
-	        if (c == TextView.class) {
-	        	float size= ((TextView) v).getTextSize();
-				((TextView) v).setTextSize(TypedValue.COMPLEX_UNIT_PX,size*factor);
-	        } 
-	    }		
+	Dialog popUp;
+	float oldfactor;
+
+	private void changeSize(ViewGroup viewgroup, float factor) {
+		for (int i = 0; i < viewgroup.getChildCount(); i++) {
+			View v = viewgroup.getChildAt(i);
+
+			Class<? extends View> c = v.getClass();
+			if (v instanceof ViewGroup)
+				changeSize((ViewGroup) v, factor);
+			if (c == TextView.class) {
+				float size = ((TextView) v).getTextSize();
+				((TextView) v).setTextSize(TypedValue.COMPLEX_UNIT_PX, size
+						* factor);
+			}
+		}
+	}
+
+	private float m_factor = 1;
+	private int WarningSecs = 5;
+	private SharedPreferences mPrefs;
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		SharedPreferences.Editor ed = mPrefs.edit();
+		ed.putFloat("SizeFactor", m_factor);
+		ed.putBoolean("ContinuousMode", ContinuousMode);
+		ed.putInt("WarningSecs", WarningSecs);
+		ed.commit();
 	}
 
 }

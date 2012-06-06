@@ -90,4 +90,12 @@
             android:layout_height="match_parent"
             />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/TestSound"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/TestSound"
+        android:onClick="onTestSoundClick"/>
+
 </LinearLayout>

@@ -27,6 +27,10 @@
     <string name="Exit">Exit</string>
     <string name="Continuousmode">Continuousmode</string>
     <string name="Resize">Resize</string>
+    <string name="TestSound">TestSound</string>
+    <string name="WarningSecs">WarningSecs</string>
+    
+    
     
     
 

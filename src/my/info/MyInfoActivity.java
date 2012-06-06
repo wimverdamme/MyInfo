@@ -12,11 +12,13 @@ import java.util.Arrays;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import my.info.Poi;
@@ -30,6 +32,8 @@ public class MyInfoActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		mPrefs = getPreferences(MODE_PRIVATE);       		
+		DebugMode=mPrefs.getBoolean("DebugMode", false);
 	}
 
 	private final String backupFilename = "store.bak";
@@ -47,6 +51,11 @@ public class MyInfoActivity extends Activity {
 			e.printStackTrace();
 		}
 	}
+	public void onTestSoundClick(View view) {
+		Intent intent = new Intent(this, SoundActivity.class);
+		startActivity(intent);
+	}
+	
 	
 	public void onButtonLoadClick(View view) {
 		File backupFile = new File(getCacheDir(), backupFilename);
@@ -203,12 +212,23 @@ public class MyInfoActivity extends Activity {
 				item.setChecked(DebugMode);
 				break;
 			case ExitMenuItemId:
-				System.exit(0);
+				finish();
 				break;
 		}
 
 			
 		return super.onOptionsItemSelected(item);
     }
+	
+
+	private SharedPreferences mPrefs;     
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		SharedPreferences.Editor ed = mPrefs.edit();
+		ed.putBoolean("DebugMode", DebugMode);
+		ed.commit();
+	}
 
 }
