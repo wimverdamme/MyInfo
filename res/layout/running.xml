@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/Running"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:id="@+id/Running"
     android:stretchColumns="1" >
 
     <TableRow
@@ -169,10 +169,10 @@
     </TableRow>
 
     <View
+        android:id="@+id/Separation1"
         android:layout_width="wrap_content"
         android:layout_height="2dip"
-        android:background="#FF909090" 
-        android:id="@+id/Separation1"/>
+        android:background="#FF909090" />
 
     <TableRow
         android:layout_width="wrap_content"
@@ -227,7 +227,8 @@
             android:padding="3dip"
             android:text="@string/Direction" />
     </TableRow>
-        <TableRow
+
+    <TableRow
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" >
 
@@ -246,11 +247,13 @@
             android:gravity="right"
             android:padding="3dip" />
     </TableRow>
+
     <View
         android:id="@+id/Separation2"
         android:layout_width="wrap_content"
         android:layout_height="2dip"
         android:background="#FF909090" />
+
     <TableRow
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" >

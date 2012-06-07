@@ -12,9 +12,9 @@ import android.util.Log;
 
 public class Sound {
 	@SuppressWarnings("rawtypes")
-	private static HashMap soundPoolMap=null;
-	private static SoundPool soundPool=null;
-	
+	private static HashMap soundPoolMap = null;
+	private static SoundPool soundPool = null;
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public List<String> initSounds(Context context) {
 		List<String> retVal = new ArrayList<String>();
@@ -26,8 +26,8 @@ public class Sound {
 		int i = 0;
 		for (Field field : fields) {
 			try {
-				soundPoolMap
-						.put(i, soundPool.load(context, field.getInt(null), i));
+				soundPoolMap.put(i,
+						soundPool.load(context, field.getInt(null), i));
 				retVal.add(field.getName());
 				i++;
 				Log.i("REFLECTION",
@@ -51,10 +51,9 @@ public class Sound {
 		soundPool.play((Integer) soundPoolMap.get(soundID), volume, volume, 1,
 				0, 1f);
 	}
-	
-	public Sound()
-	{
-		
+
+	public Sound() {
+
 	}
 
 }

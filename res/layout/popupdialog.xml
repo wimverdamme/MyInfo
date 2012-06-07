@@ -2,28 +2,26 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
-  
-  <EditText android:id="@+id/Value"      
- android:layout_width="wrap_content"
- android:layout_height="wrap_content"
-/>
-    
 
-    <Button android:id="@+id/OkButton"
- android:layout_below="@+id/Value"
- android:layout_width="wrap_content"
- android:layout_height="wrap_content"
+    <EditText
+        android:id="@+id/Value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="none" />
 
- android:text="Ok"/>
- <Button android:id="@+id/CloseButton"
- android:layout_below="@+id/Value"
- android:layout_width="wrap_content"
- android:layout_height="wrap_content"
+    <Button
+        android:id="@+id/OkButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/Value"
+        android:text="@android:string/ok" />
 
- android:text="Close" android:layout_toRightOf="@id/OkButton"/>
- 
-
-
-
+    <Button
+        android:id="@+id/CloseButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/Value"
+        android:layout_toLeftOf="@id/OkButton"
+        android:text="@android:string/cancel" />
 
 </RelativeLayout>

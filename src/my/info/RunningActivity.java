@@ -4,7 +4,6 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -16,8 +15,6 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.AudioManager;
-import android.media.ToneGenerator;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -96,7 +93,6 @@ public class RunningActivity extends Activity {
 
 		this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(
 				Intent.ACTION_BATTERY_CHANGED));
-	
 
 		Arrow = new ArrowDirectionView(this);
 		((TableRow) findViewById(R.id.DirectionRow)).addView(Arrow);
@@ -109,17 +105,15 @@ public class RunningActivity extends Activity {
 
 		ContinuousMode = mPrefs.getBoolean("ContinuousMode", false);
 		WarningSecs = mPrefs.getInt("WarningSecs", 5);
-		
+
 		int visible = extended ? View.VISIBLE : View.INVISIBLE;
 		Visibility(visible);
-		sound=new Sound();
+		sound = new Sound();
 		sound.initSounds(this);
 
 	}
 
-
-	public void Visibility(int visible ) 
-	{
+	public void Visibility(int visible) {
 
 		findViewById(R.id.ChargerConnected).setVisibility(visible);
 		findViewById(R.id.ChargerConnectedValue).setVisibility(visible);
@@ -135,28 +129,28 @@ public class RunningActivity extends Activity {
 		findViewById(R.id.TypeValue).setVisibility(visible);
 		findViewById(R.id.DirectionArrow).setVisibility(visible);
 		Arrow.setVisibility(visible);
-		
-		
+
 	}
 
 	private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context arg0, Intent intent) {
-	
+
 			int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
 			isPlugged = (plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB);
 			((TextView) findViewById(R.id.ChargerConnectedValue))
 					.setText(getResources().getText(
 							isPlugged ? R.string.Plugged : R.string.Unplugged)
 							+ " " + plugged);
-			if (extended && plugged==0)
-			{
-				extended=false;
-				((TextView)findViewById(R.id.ExtendedValue)).setText(R.string.LabelNo);
+			if (extended && plugged == 0) {
+				extended = false;
+				((TextView) findViewById(R.id.ExtendedValue))
+						.setText(R.string.LabelNo);
 			}
-			int visible = (extended&&plugged!=0) ? View.VISIBLE : View.INVISIBLE;
-			Visibility(visible);		
-			
+			int visible = (extended && plugged != 0) ? View.VISIBLE
+					: View.INVISIBLE;
+			Visibility(visible);
+
 		}
 	};
 
@@ -212,7 +206,7 @@ public class RunningActivity extends Activity {
 						.format(date));
 
 				Poi p = findClosedPoi(location.getLatitude(),
-						location.getLongitude(),location.getBearing());
+						location.getLongitude(), location.getBearing());
 				float[] results = new float[3];
 				Location.distanceBetween(location.getLatitude(),
 						location.getLongitude(), p.getLatitudeE6()
@@ -233,9 +227,9 @@ public class RunningActivity extends Activity {
 				long now = System.currentTimeMillis();
 				if ((speed > 0) && (results[0] / speed < WarningSecs)
 						&& (lastBeepPoi != p)) {
-					
+
 					sound.playSound(0);
-					
+
 					lastBeep = now;
 					lastBeepPoi = p;
 					((TextView) findViewById(R.id.ExtendedValue)).setText(sdf
@@ -257,7 +251,8 @@ public class RunningActivity extends Activity {
 			}
 		}
 
-		public Poi findClosedPoi(double Latitude, double Longitude, float Bearing) {
+		public Poi findClosedPoi(double Latitude, double Longitude,
+				float Bearing) {
 			Poi closestPoi = PoiList.get(0);
 			float[] results = new float[3];
 			Location.distanceBetween(Latitude, Longitude,
@@ -268,7 +263,8 @@ public class RunningActivity extends Activity {
 				Location.distanceBetween(Latitude, Longitude, p.getLatitudeE6()
 						/ (double) 1E6, p.getLongitudeE6() / (double) 1E6,
 						results);
-				if (results[0] < closestDist && Math.abs(results[2]-Bearing)<90) {
+				if (results[0] < closestDist
+						&& Math.abs(results[2] - Bearing) < 90) {
 					closestDist = results[0];
 					closestPoi = p;
 				}
@@ -277,17 +273,14 @@ public class RunningActivity extends Activity {
 		}
 
 		public void onProviderDisabled(String provider) {
-			
 
 		}
 
 		public void onProviderEnabled(String provider) {
-		
 
 		}
 
 		public void onStatusChanged(String provider, int status, Bundle extras) {
-			
 
 		}
 
@@ -321,9 +314,12 @@ public class RunningActivity extends Activity {
 		ContinuousModeItem.setCheckable(true);
 		ContinuousModeItem.setChecked(ContinuousMode);
 
-		menu.add(Menu.NONE, MenuItemIds.Resize.ordinal(), Menu.NONE,R.string.Resize);
-		menu.add(Menu.NONE, MenuItemIds.WarningSecs.ordinal(), Menu.NONE,R.string.WarningSecs);
-		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE,R.string.Exit);
+		menu.add(Menu.NONE, MenuItemIds.Resize.ordinal(), Menu.NONE,
+				R.string.Resize);
+		menu.add(Menu.NONE, MenuItemIds.WarningSecs.ordinal(), Menu.NONE,
+				R.string.WarningSecs);
+		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE,
+				R.string.Exit);
 		return true;
 	}
 
@@ -331,9 +327,9 @@ public class RunningActivity extends Activity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		Button button ;
+		Button button;
 		EditText et;
-		oldfactor=m_factor;
+		oldfactor = m_factor;
 		switch (MenuItemIds.values()[item.getItemId()]) {
 		case ContinuousModeMenuItemId:
 			ContinuousMode = !item.isChecked();
@@ -348,12 +344,12 @@ public class RunningActivity extends Activity {
 			popUp = new Dialog(RunningActivity.this);
 			popUp.setContentView(R.layout.popupdialog);
 			popUp.setTitle("Input");
-			popUp.setCancelable(true);			
-			
-			et=(EditText) popUp.findViewById(R.id.Value);
-			et.setInputType(android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL );			
-			et.setText(""+m_factor);
-			
+			popUp.setCancelable(true);
+
+			et = (EditText) popUp.findViewById(R.id.Value);
+			et.setInputType(android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+			et.setText("" + m_factor);
+
 			button = (Button) popUp.findViewById(R.id.CloseButton);
 			button.setOnClickListener(new OnClickListener() {
 
@@ -367,19 +363,22 @@ public class RunningActivity extends Activity {
 				public void onClick(View v) {
 					View parent = (View) v.getParent();
 
-					String Info = ((TextView) parent.findViewById(R.id.Value)).getText().toString();
-					try{
-						m_factor=Float.parseFloat(Info);
-					}catch (NumberFormatException e){}
+					String Info = ((TextView) parent.findViewById(R.id.Value))
+							.getText().toString();
+					try {
+						m_factor = Float.parseFloat(Info);
+					} catch (NumberFormatException e) {
+					}
 
 					popUp.dismiss();
-					float newfactor = m_factor/oldfactor;
-					changeSize((ViewGroup) findViewById(R.id.Running), newfactor);
-					
+					float newfactor = m_factor / oldfactor;
+					changeSize((ViewGroup) findViewById(R.id.Running),
+							newfactor);
+
 				}
 			});
-			
-			popUp.show();			
+
+			popUp.show();
 			break;
 
 		case WarningSecs:
@@ -387,12 +386,12 @@ public class RunningActivity extends Activity {
 			popUp = new Dialog(RunningActivity.this);
 			popUp.setContentView(R.layout.popupdialog);
 			popUp.setTitle("Input");
-			popUp.setCancelable(true);			
-			
-			et=(EditText) popUp.findViewById(R.id.Value);
-			et.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);			
-			et.setText(""+WarningSecs);
-			
+			popUp.setCancelable(true);
+
+			et = (EditText) popUp.findViewById(R.id.Value);
+			et.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+			et.setText("" + WarningSecs);
+
 			button = (Button) popUp.findViewById(R.id.CloseButton);
 			button.setOnClickListener(new OnClickListener() {
 
@@ -405,10 +404,12 @@ public class RunningActivity extends Activity {
 
 				public void onClick(View v) {
 					View parent = (View) v.getParent();
-					String Info = ((TextView) parent.findViewById(R.id.Value)).getText().toString();
-					try{
-					WarningSecs=Integer.parseInt(Info);
-					}catch (NumberFormatException e){}
+					String Info = ((TextView) parent.findViewById(R.id.Value))
+							.getText().toString();
+					try {
+						WarningSecs = Integer.parseInt(Info);
+					} catch (NumberFormatException e) {
+					}
 
 					popUp.dismiss();
 				}
@@ -421,6 +422,7 @@ public class RunningActivity extends Activity {
 
 		return super.onOptionsItemSelected(item);
 	}
+
 	Dialog popUp;
 	float oldfactor;
 

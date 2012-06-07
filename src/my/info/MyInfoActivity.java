@@ -31,8 +31,8 @@ public class MyInfoActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		mPrefs = getPreferences(MODE_PRIVATE);       		
-		DebugMode=mPrefs.getBoolean("DebugMode", false);
+		mPrefs = getPreferences(MODE_PRIVATE);
+		DebugMode = mPrefs.getBoolean("DebugMode", false);
 	}
 
 	private final String backupFilename = "store.bak";
@@ -43,39 +43,39 @@ public class MyInfoActivity extends Activity {
 			backupFile.delete();
 		try {
 			backupFile.createNewFile();
-			ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(backupFile));
+			ObjectOutputStream os = new ObjectOutputStream(
+					new FileOutputStream(backupFile));
 			os.writeObject(PoiList.toArray(new Poi[0]));
 			os.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+
 	public void onTestSoundClick(View view) {
 		Intent intent = new Intent(this, SoundActivity.class);
 		startActivity(intent);
 	}
-	
-	
+
 	public void onButtonLoadClick(View view) {
 		File backupFile = new File(getCacheDir(), backupFilename);
-		if (backupFile.exists())		
+		if (backupFile.exists())
 			try {
-				ObjectInputStream is=new ObjectInputStream(new FileInputStream(backupFile));
-				
-				PoiList = new ArrayList<Poi>(Arrays.asList((Poi[])is.readObject()));
-				
+				ObjectInputStream is = new ObjectInputStream(
+						new FileInputStream(backupFile));
 
-				if (PoiList.size() > 0)
-				{
-					convertionDone=true;
-					((TextView) findViewById(R.id.NrOfPoisFound)).setText(""+PoiList.size());
+				PoiList = new ArrayList<Poi>(Arrays.asList((Poi[]) is
+						.readObject()));
+
+				if (PoiList.size() > 0) {
+					convertionDone = true;
+					((TextView) findViewById(R.id.NrOfPoisFound)).setText(""
+							+ PoiList.size());
 				}
-				
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
-
 
 	}
 
@@ -120,8 +120,7 @@ public class MyInfoActivity extends Activity {
 					try {
 						list = mgr.list(path);
 						for (String f : list)
-							if (f.toLowerCase().endsWith(".csv")) 
-							{
+							if (f.toLowerCase().endsWith(".csv")) {
 
 								// ((TextView)
 								// findViewById(R.id.SelectedFile)).setText(f);
@@ -188,39 +187,39 @@ public class MyInfoActivity extends Activity {
 		}
 
 	}
-	final int DebugModeMenuItemId=0;
-	final int ExitMenuItemId=1;
+
+	final int DebugModeMenuItemId = 0;
+	final int ExitMenuItemId = 1;
+
 	@Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-		MenuItem DebugModeItem=menu.add(Menu.NONE,DebugModeMenuItemId,Menu.NONE,R.string.Debugmode);
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuItem DebugModeItem = menu.add(Menu.NONE, DebugModeMenuItemId,
+				Menu.NONE, R.string.Debugmode);
 		DebugModeItem.setCheckable(true);
 		DebugModeItem.setChecked(DebugMode);
-		
-		menu.add(Menu.NONE,ExitMenuItemId,Menu.NONE,R.string.Exit);
-	    return true;
-    }
-	private boolean DebugMode=false;
+
+		menu.add(Menu.NONE, ExitMenuItemId, Menu.NONE, R.string.Exit);
+		return true;
+	}
+
+	private boolean DebugMode = false;
+
 	@Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-		switch (item.getItemId())
-		{
-			case DebugModeMenuItemId:				
-				DebugMode=!item.isChecked();
-				item.setChecked(DebugMode);
-				break;
-			case ExitMenuItemId:
-				finish();
-				break;
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case DebugModeMenuItemId:
+			DebugMode = !item.isChecked();
+			item.setChecked(DebugMode);
+			break;
+		case ExitMenuItemId:
+			finish();
+			break;
 		}
 
-			
 		return super.onOptionsItemSelected(item);
-    }
-	
+	}
 
-	private SharedPreferences mPrefs;     
+	private SharedPreferences mPrefs;
 
 	@Override
 	protected void onPause() {

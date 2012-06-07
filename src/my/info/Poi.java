@@ -34,10 +34,10 @@ public class Poi implements Serializable {
 
 	}
 
-	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException
-	 {
-		 Type=(String)in.readObject();
-		 LatitudeE6=in.readInt();
-		 LongitudeE6=in.readInt();		 
-	 }
+	private void readObject(java.io.ObjectInputStream in) throws IOException,
+			ClassNotFoundException {
+		Type = (String) in.readObject();
+		LatitudeE6 = in.readInt();
+		LongitudeE6 = in.readInt();
+	}
 }

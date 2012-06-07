@@ -8,12 +8,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" >
-
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="@string/LabelStart" />
-
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
@@ -34,26 +34,25 @@
                 android:onClick="onButtonNoClick"
                 android:text="@string/LabelNo" />
         </LinearLayout>
-
     </LinearLayout>
 
     <Button
         android:id="@+id/ButtonAll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#010101"
         android:onClick="onButtonAllClick"
-        android:text="@string/LabelAll" 
-        
-        android:textColor="#010101" android:textColorHighlight="#010101" android:background="#010101"/>
+        android:text="@string/LabelAll"
+        android:textColor="#010101"
+        android:textColorHighlight="#010101" />
 
     <Button
         android:id="@+id/ButtonConvert"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/Convert"
         android:onClick="onButtonConvertClick"
-        />
-
+        android:text="@string/Convert" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
@@ -63,39 +62,39 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/Save"
-            android:onClick="onButtonSaveClick"/>
+            android:onClick="onButtonSaveClick"
+            android:text="@string/Save" />
 
         <Button
             android:id="@+id/LoadButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/Load"
-            android:onClick="onButtonLoadClick" />
+            android:onClick="onButtonLoadClick"
+            android:text="@string/Load" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" >
-    <TextView
+
+        <TextView
             android:id="@+id/SelectedFile"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
-    <TextView
+            android:layout_height="match_parent" />
+
+        <TextView
             android:id="@+id/NrOfPoisFound"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
+            android:layout_height="match_parent" />
     </LinearLayout>
-
+
     <Button
         android:id="@+id/TestSound"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/TestSound"
-        android:onClick="onTestSoundClick"/>
+        android:onClick="onTestSoundClick"
+        android:text="@string/TestSound" />
 
 </LinearLayout>

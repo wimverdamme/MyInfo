@@ -11,9 +11,8 @@ import android.widget.ScrollView;
 
 public class SoundActivity extends Activity {
 
-
 	private Sound sound;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -25,7 +24,6 @@ public class SoundActivity extends Activity {
 		LinearLayout ll = new LinearLayout(this);
 		ll.setOrientation(LinearLayout.VERTICAL);
 		sv.addView(ll);
-
 
 		int i = 0;
 		for (String e : sounds) {
