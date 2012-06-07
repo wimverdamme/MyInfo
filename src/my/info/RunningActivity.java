@@ -212,7 +212,7 @@ public class RunningActivity extends Activity {
 						.format(date));
 
 				Poi p = findClosedPoi(location.getLatitude(),
-						location.getLongitude());
+						location.getLongitude(),location.getBearing());
 				float[] results = new float[3];
 				Location.distanceBetween(location.getLatitude(),
 						location.getLongitude(), p.getLatitudeE6()
@@ -232,7 +232,7 @@ public class RunningActivity extends Activity {
 
 				long now = System.currentTimeMillis();
 				if ((speed > 0) && (results[0] / speed < WarningSecs)
-						&& (lastBeep + 5000 < now || lastBeepPoi != p)) {
+						&& (lastBeepPoi != p)) {
 					
 					sound.playSound(0);
 					
@@ -257,7 +257,7 @@ public class RunningActivity extends Activity {
 			}
 		}
 
-		public Poi findClosedPoi(double Latitude, double Longitude) {
+		public Poi findClosedPoi(double Latitude, double Longitude, float Bearing) {
 			Poi closestPoi = PoiList.get(0);
 			float[] results = new float[3];
 			Location.distanceBetween(Latitude, Longitude,
@@ -268,7 +268,7 @@ public class RunningActivity extends Activity {
 				Location.distanceBetween(Latitude, Longitude, p.getLatitudeE6()
 						/ (double) 1E6, p.getLongitudeE6() / (double) 1E6,
 						results);
-				if (results[0] < closestDist) {
+				if (results[0] < closestDist && Math.abs(results[2]-Bearing)<90) {
 					closestDist = results[0];
 					closestPoi = p;
 				}
