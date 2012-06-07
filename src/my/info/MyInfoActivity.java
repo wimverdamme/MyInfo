@@ -52,11 +52,6 @@ public class MyInfoActivity extends Activity {
 		}
 	}
 
-	public void onTestSoundClick(View view) {
-		Intent intent = new Intent(this, SoundActivity.class);
-		startActivity(intent);
-	}
-
 	public void onButtonLoadClick(View view) {
 		File backupFile = new File(getCacheDir(), backupFilename);
 		if (backupFile.exists())
@@ -119,13 +114,10 @@ public class MyInfoActivity extends Activity {
 					final TextView tv2 = ((TextView) findViewById(R.id.NrOfPoisFound));
 					try {
 						list = mgr.list(path);
+						int filecount=1;
 						for (String f : list)
 							if (f.toLowerCase().endsWith(".csv")) {
-
-								// ((TextView)
-								// findViewById(R.id.SelectedFile)).setText(f);
-
-								final String text = f;
+								final String text = ""+filecount++;
 								tv.post(new Runnable() {
 									public void run() {
 										tv.setText(text);
