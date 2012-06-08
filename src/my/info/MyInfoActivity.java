@@ -24,8 +24,6 @@ import my.info.Poi;
 
 public class MyInfoActivity extends Activity {
 
-	private boolean convertionDone = false;
-
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -33,8 +31,9 @@ public class MyInfoActivity extends Activity {
 		setContentView(R.layout.main);
 		mPrefs = getPreferences(MODE_PRIVATE);
 		DebugMode = mPrefs.getBoolean("DebugMode", false);
+		       	
 	}
-
+	
 	private final String backupFilename = "store.bak";
 
 	public void onButtonSaveClick(View view) {
@@ -63,7 +62,6 @@ public class MyInfoActivity extends Activity {
 						.readObject()));
 
 				if (PoiList.size() > 0) {
-					convertionDone = true;
 					((TextView) findViewById(R.id.NrOfPoisFound)).setText(""
 							+ PoiList.size());
 				}
@@ -80,7 +78,7 @@ public class MyInfoActivity extends Activity {
 	}
 
 	public void onButtonYesClick(View view) {
-		if (!convertionDone)
+		if (PoiList.isEmpty())
 			return;
 		Intent intent = new Intent(this, RunningActivity.class);
 		intent.putExtra("Extended", false);
@@ -88,7 +86,7 @@ public class MyInfoActivity extends Activity {
 	}
 
 	public void onButtonAllClick(View view) {
-		if (!convertionDone)
+		if (PoiList.isEmpty())
 			return;
 		Intent intent = new Intent(this, RunningActivity.class);
 		intent.putExtra("Extended", true);
@@ -151,6 +149,8 @@ public class MyInfoActivity extends Activity {
 									Poi p = new Poi((int) (Latitude * 1E6),
 											(int) (Longitude * 1E6), Type);
 									PoiList.add(p);
+//									if (UseDatabase)
+//										m_poiDB.insertPoi(p);
 								}
 								final String text2 = "" + PoiList.size();
 								tv.post(new Runnable() {
@@ -171,8 +171,6 @@ public class MyInfoActivity extends Activity {
 							tv.setText("");
 						}
 					});
-					if (PoiList.size() > 0)
-						convertionDone = true;
 					Converting = false;
 				}
 			}).start();
@@ -189,12 +187,13 @@ public class MyInfoActivity extends Activity {
 				Menu.NONE, R.string.Debugmode);
 		DebugModeItem.setCheckable(true);
 		DebugModeItem.setChecked(DebugMode);
-
+		
 		menu.add(Menu.NONE, ExitMenuItemId, Menu.NONE, R.string.Exit);
 		return true;
 	}
 
 	private boolean DebugMode = false;
+	
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
