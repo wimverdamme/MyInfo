@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -17,6 +19,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +31,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class RunningActivity extends Activity {
 
@@ -76,6 +80,44 @@ public class RunningActivity extends Activity {
 				LocationEnabled = "Gps";
 		else if (network_enabled)
 			LocationEnabled = "Network";
+		else
+		{
+			// prepare the alert box
+            AlertDialog.Builder alertbox = new AlertDialog.Builder(this);
+ 
+            // set the message to display
+            alertbox.setMessage("Enable Gps?");
+ 
+            // add a neutral button to the alert box and assign a click listener            
+            alertbox.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+ 
+                // click listener on the alert box
+                public void onClick(DialogInterface arg0, int arg1) {
+                    // the button was clicked
+                    //Toast.makeText(getApplicationContext(), "OK button clicked", Toast.LENGTH_LONG).show();
+                    if(!locManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER ))
+        			{
+        			    Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS );
+        			    startActivity(myIntent);
+        			}
+                }
+            });
+            alertbox.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+ 
+                // click listener on the alert box
+                public void onClick(DialogInterface arg0, int arg1) {
+                    // the button was clicked
+                    //Toast.makeText(getApplicationContext(), "canel button clicked", Toast.LENGTH_LONG).show();
+                    locManager.removeUpdates(locListener);
+        			dummylocmanager.removeUpdates(dummyloclistener);
+        			finish();
+                }
+            });
+ 
+            // show it
+            alertbox.show();			
+
+		}
 		((TextView) findViewById(R.id.LocationEnabledValue))
 				.setText(LocationEnabled);
 
