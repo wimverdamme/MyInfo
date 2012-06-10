@@ -31,7 +31,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class RunningActivity extends Activity {
 
@@ -146,6 +145,7 @@ public class RunningActivity extends Activity {
 		changeSize((ViewGroup) findViewById(R.id.Running), m_factor);
 
 		ContinuousMode = mPrefs.getBoolean("ContinuousMode", false);
+		RejectPassed = mPrefs.getBoolean("RejectPassed", false);	
 		WarningSecs = mPrefs.getInt("WarningSecs", 5);
 
 		int visible = extended ? View.VISIBLE : View.INVISIBLE;
@@ -274,7 +274,7 @@ public class RunningActivity extends Activity {
 
 					lastBeep = now;
 					lastBeepPoi = p;
-					((TextView) findViewById(R.id.ExtendedValue)).setText(sdf
+					((TextView) findViewById(R.id.ExtendedValue)).setText(results[0]+" "+p.getId()+" "+ sdf
 							.format(date));
 				}
 
@@ -306,7 +306,7 @@ public class RunningActivity extends Activity {
 						/ (double) 1E6, p.getLongitudeE6() / (double) 1E6,
 						results);
 				if (results[0] < closestDist
-						&& Math.abs(results[2] - Bearing) < 90) {
+						&& (Math.abs(results[2] - Bearing) < 90)||!RejectPassed) {
 					closestDist = results[0];
 					closestPoi = p;
 				}
@@ -345,7 +345,7 @@ public class RunningActivity extends Activity {
 	}
 
 	public enum MenuItemIds {
-		ContinuousModeMenuItemId, ResizeText, ExitMenuItemId, Resize, WarningSecs
+		ContinuousModeMenuItemId, ResizeText, ExitMenuItemId, Resize, WarningSecs, RejectPassed
 	}
 
 	@Override
@@ -362,10 +362,15 @@ public class RunningActivity extends Activity {
 				R.string.WarningSecs);
 		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE,
 				R.string.Exit);
+		MenuItem RejectPassedItem=menu.add(Menu.NONE, MenuItemIds.RejectPassed.ordinal(), Menu.NONE,
+				R.string.RejectPassed);
+		RejectPassedItem.setCheckable(true);
+		RejectPassedItem.setChecked(RejectPassed);
 		return true;
 	}
 
 	private static boolean ContinuousMode = false;
+	private static boolean RejectPassed = false;
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -376,6 +381,10 @@ public class RunningActivity extends Activity {
 		case ContinuousModeMenuItemId:
 			ContinuousMode = !item.isChecked();
 			item.setChecked(ContinuousMode);
+			break;
+		case RejectPassed:
+			RejectPassed = !item.isChecked();
+			item.setChecked(RejectPassed);
 			break;
 		case ExitMenuItemId:
 			locManager.removeUpdates(locListener);
@@ -494,6 +503,7 @@ public class RunningActivity extends Activity {
 		ed.putFloat("SizeFactor", m_factor);
 		ed.putBoolean("ContinuousMode", ContinuousMode);
 		ed.putInt("WarningSecs", WarningSecs);
+		ed.putBoolean("RejectPassed", RejectPassed);
 		ed.commit();
 	}
 
