@@ -8,11 +8,14 @@ public class Poi implements Serializable {
 	private String Type;
 	private int LatitudeE6;
 	private int LongitudeE6;
+	private int Id;
+	private static int LastId=0;
 
 	public Poi(int latitudeE6, int longitudeE6, String Type) {
 		this.LongitudeE6 = longitudeE6;
 		this.LatitudeE6 = latitudeE6;
 		this.Type = Type;
+		this.Id=LastId++;
 	}
 
 	public String getType() {
@@ -25,6 +28,9 @@ public class Poi implements Serializable {
 
 	int getLongitudeE6() {
 		return LongitudeE6;
+	}
+	int getId() {
+		return Id;
 	}
 
 	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
