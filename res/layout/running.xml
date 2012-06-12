@@ -10,14 +10,15 @@
         android:layout_height="wrap_content" >
 
         <TextView
+            android:id="@+id/LastWarning"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_column="1"
             android:padding="3dip"
-            android:text="@string/Extended" />
+            android:text="@string/LastWarning" />
 
         <TextView
-            android:id="@+id/ExtendedValue"
+            android:id="@+id/LastWarningValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="right"
@@ -29,14 +30,15 @@
         android:layout_height="wrap_content" >
 
         <TextView
+            android:id="@+id/PoiId"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_column="1"
             android:padding="3dip"
-            android:text="@string/LocationEnabled" />
+            android:text="@string/PoiId" />
 
         <TextView
-            android:id="@+id/LocationEnabledValue"
+            android:id="@+id/PoiIdValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="right"

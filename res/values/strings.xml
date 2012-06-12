@@ -7,8 +7,8 @@
     <string name="LabelNo">No</string>
     <string name="LabelAll">All</string>
     <string name="ChargerConnected">ChargerConnected</string>
-    <string name="Extended">Extended</string>
-    <string name="LocationEnabled">LocationEnabled</string>
+    <string name="LastWarning">Last Warning</string>
+    <string name="PoiId">Poi Id</string>
     <string name="Longitude">Longitude</string>
     <string name="Latitude">Latitude</string>
     <string name="Altitude">Altitude</string>
@@ -31,5 +31,6 @@
     <string name="TestSound">TestSound</string>
     <string name="WarningSecs">WarningSecs</string>
     <string name="RejectPassed">Reject Passed</string>
+    <string name="Unknown">Unkown</string>
 
 </resources>

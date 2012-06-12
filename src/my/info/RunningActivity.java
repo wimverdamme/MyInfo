@@ -39,7 +39,6 @@ public class RunningActivity extends Activity {
 	private boolean extended = false;
 	private boolean gps_enabled = false;
 	private LocationManager locManager, dummylocmanager;
-	private boolean network_enabled = false;
 	private LocationListener locListener = new MyLocationListener(this),
 			dummyloclistener = new MyDummyLocationListener();
 	private boolean isPlugged = false;
@@ -53,9 +52,6 @@ public class RunningActivity extends Activity {
 
 		setContentView(R.layout.running);
 		extended = getIntent().getExtras().getBoolean("Extended");
-		((TextView) findViewById(R.id.ExtendedValue)).setText(this
-				.getResources().getText(
-						extended ? R.string.LabelYes : R.string.LabelNo));
 
 		locManager = (LocationManager) this
 				.getSystemService(Context.LOCATION_SERVICE);
@@ -66,20 +62,8 @@ public class RunningActivity extends Activity {
 					.isProviderEnabled(LocationManager.GPS_PROVIDER);
 		} catch (Exception ex) {
 		}
-		try {
-			network_enabled = locManager
-					.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-		} catch (Exception ex) {
-		}
-		String LocationEnabled = "Off";
-		if (gps_enabled)
-			if (network_enabled)
-				LocationEnabled = "Network/Gps";
-			else
-				LocationEnabled = "Gps";
-		else {
-			if (network_enabled)
-				LocationEnabled = "Network";
+
+		if (!gps_enabled) {
 			// prepare the alert box
 			AlertDialog.Builder alertbox = new AlertDialog.Builder(this);
 
@@ -122,8 +106,7 @@ public class RunningActivity extends Activity {
 			alertbox.show();
 
 		}
-		((TextView) findViewById(R.id.LocationEnabledValue))
-				.setText(LocationEnabled);
+		((TextView) findViewById(R.id.PoiIdValue)).setText("");
 
 		if (gps_enabled) {
 			locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
@@ -132,9 +115,6 @@ public class RunningActivity extends Activity {
 					LocationManager.GPS_PROVIDER, 3600000, 100000,
 					dummyloclistener);
 
-		} else if (network_enabled) {
-			locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-					0, 0, locListener);
 		}
 
 		this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(
@@ -155,9 +135,19 @@ public class RunningActivity extends Activity {
 
 		int visible = extended ? View.VISIBLE : View.INVISIBLE;
 		Visibility(visible);
+		if (!extended) {
+			ChangeTextToHidden();
+		}
 		sound = new Sound();
 		sound.initSounds(this);
 
+	}
+
+	private void ChangeTextToHidden() {
+		((TextView) findViewById(R.id.LastWarningValue))
+				.setText(R.string.LabelNo);
+		((TextView) findViewById(R.id.PoiId)).setText(R.string.Unknown);
+		((TextView) findViewById(R.id.LastWarning)).setText(R.string.Unknown);
 	}
 
 	public void Visibility(int visible) {
@@ -191,8 +181,7 @@ public class RunningActivity extends Activity {
 							+ " " + plugged);
 			if (extended && plugged == 0) {
 				extended = false;
-				((TextView) findViewById(R.id.ExtendedValue))
-						.setText(R.string.LabelNo);
+				ChangeTextToHidden();
 			}
 			int visible = (extended && plugged != 0) ? View.VISIBLE
 					: View.INVISIBLE;
@@ -232,7 +221,7 @@ public class RunningActivity extends Activity {
 				// This needs to stop getting the location data and save the
 				// battery power.
 				locManager.removeUpdates(locListener);
-				DecimalFormat df = new DecimalFormat("#.#####");
+				DecimalFormat df = new DecimalFormat("#.0000");
 				((TextView) findViewById(R.id.LongitudeValue)).setText(df
 						.format(location.getLongitude()));
 				((TextView) findViewById(R.id.LatitudeValue)).setText(df
@@ -245,8 +234,7 @@ public class RunningActivity extends Activity {
 
 				Date date = new Date();
 				date.setTime(location.getTime());
-				// Time time = new Time();
-				// time.set(location.getTime());
+
 				SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
 				((TextView) findViewById(R.id.UpdateTimeValue)).setText(sdf
@@ -271,31 +259,28 @@ public class RunningActivity extends Activity {
 				float speed = location.getSpeed();
 				((TextView) findViewById(R.id.SpeedValue)).setText(df
 						.format(speed * 3.6));
+				((TextView) findViewById(R.id.PoiIdValue)).setText(""
+						+ p.getId());
 
 				long now = System.currentTimeMillis();
-				if ((speed > 0) && (results[0] / speed < WarningSecs)
-						&& (lastBeepPoi != p)) {
+				// if ((speed > 0) && (results[0] / speed < WarningSecs)
+				// && (lastBeepPoi != p))
+				{
 
 					sound.playSound(0);
 
 					lastBeep = now;
 					lastBeepPoi = p;
-					((TextView) findViewById(R.id.ExtendedValue)).setText(sdf
-							.format(date));
-					((TextView) findViewById(R.id.LocationEnabledValue))
-							.setText(""+p.getId());
+					((TextView) findViewById(R.id.LastWarningValue))
+							.setText(sdf.format(date));
+
 				}
 
 				if (gps_enabled) {
 					locManager.requestLocationUpdates(
 							LocationManager.GPS_PROVIDER, ContinuousMode ? 0
-									: 1000, ContinuousMode ? 0
-									: results[0] / 3, locListener);
-				} else if (network_enabled) {
-					locManager.requestLocationUpdates(
-							LocationManager.NETWORK_PROVIDER,
-							ContinuousMode ? 0 : 15000, ContinuousMode ? 0
-									: results[0] / 3, locListener);
+									: 1000,
+							ContinuousMode ? 0 : results[0] / 3, locListener);
 				}
 
 			}
@@ -364,23 +349,25 @@ public class RunningActivity extends Activity {
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuItem ContinuousModeItem = menu.add(Menu.NONE,
-				MenuItemIds.ContinuousModeMenuItemId.ordinal(), Menu.NONE,
-				R.string.Continuousmode);
-		ContinuousModeItem.setCheckable(true);
-		ContinuousModeItem.setChecked(ContinuousMode);
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		if (extended) {
+			MenuItem ContinuousModeItem = menu.add(Menu.NONE,
+					MenuItemIds.ContinuousModeMenuItemId.ordinal(), Menu.NONE,
+					R.string.Continuousmode);
+			ContinuousModeItem.setCheckable(true);
+			ContinuousModeItem.setChecked(ContinuousMode);
 
-		MenuItem RejectPassedItem = menu.add(Menu.NONE,
-				MenuItemIds.RejectPassedItemId.ordinal(), Menu.NONE,
-				R.string.RejectPassed);
-		RejectPassedItem.setCheckable(true);
-		RejectPassedItem.setChecked(RejectPassed);
+			MenuItem RejectPassedItem = menu.add(Menu.NONE,
+					MenuItemIds.RejectPassedItemId.ordinal(), Menu.NONE,
+					R.string.RejectPassed);
+			RejectPassedItem.setCheckable(true);
+			RejectPassedItem.setChecked(RejectPassed);
 
-		menu.add(Menu.NONE, MenuItemIds.ResizeTextItemId.ordinal(), Menu.NONE,
-				R.string.Resize);
-		menu.add(Menu.NONE, MenuItemIds.WarningSecsItemId.ordinal(), Menu.NONE,
-				R.string.WarningSecs);
+			menu.add(Menu.NONE, MenuItemIds.ResizeTextItemId.ordinal(),
+					Menu.NONE, R.string.Resize);
+			menu.add(Menu.NONE, MenuItemIds.WarningSecsItemId.ordinal(),
+					Menu.NONE, getString(R.string.WarningSecs)+" ("+this.WarningSecs+")");
+		}
 		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE,
 				R.string.Exit);
 
