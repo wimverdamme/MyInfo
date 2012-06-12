@@ -247,8 +247,9 @@ public class RunningActivity extends Activity {
 				((TextView) findViewById(R.id.UpdateTimeValue)).setText(sdf
 						.format(date));
 
+				float Bearing=location.getBearing();
 				Poi p = findClosedPoi(location.getLatitude(),
-						location.getLongitude(), location.getBearing());
+						location.getLongitude(), Bearing);
 				float[] results = new float[3];
 				Location.distanceBetween(location.getLatitude(),
 						location.getLongitude(), p.getLatitudeE6()
@@ -259,7 +260,7 @@ public class RunningActivity extends Activity {
 				((TextView) findViewById(R.id.DirectionNumericValue))
 						.setText(df.format(results[2]));
 
-				Arrow.setDirection(results[2] - location.getBearing());
+				Arrow.setDirection(results[2] - Bearing);
 				((TextView) findViewById(R.id.TypeValue)).setText(p.getType());
 
 				float speed = location.getSpeed();
@@ -305,14 +306,22 @@ public class RunningActivity extends Activity {
 				Location.distanceBetween(Latitude, Longitude, p.getLatitudeE6()
 						/ (double) 1E6, p.getLongitudeE6() / (double) 1E6,
 						results);
+				float Direction=Math.abs(results[2] - Bearing);
+				while (Direction < 0.0f) {
+					Direction += 360.0f;
+		        }
+		        while (Direction >= 360.0f) {
+		        	Direction -= 360.0f;
+		        }
 				if (results[0] < closestDist
-						&& (Math.abs(results[2] - Bearing) < 90)||!RejectPassed) {
+						&& (Direction < 90 || Direction >270||!RejectPassed)) {
 					closestDist = results[0];
 					closestPoi = p;
 				}
 			}
 			return closestPoi;
 		}
+		
 
 		public void onProviderDisabled(String provider) {
 
@@ -345,7 +354,7 @@ public class RunningActivity extends Activity {
 	}
 
 	public enum MenuItemIds {
-		ContinuousModeMenuItemId, ResizeText, ExitMenuItemId, Resize, WarningSecs, RejectPassed
+		ContinuousModeMenuItemId, RejectPassedItemId, ResizeTextItemId, WarningSecsItemId,ExitMenuItemId
 	}
 
 	@Override
@@ -355,17 +364,19 @@ public class RunningActivity extends Activity {
 				R.string.Continuousmode);
 		ContinuousModeItem.setCheckable(true);
 		ContinuousModeItem.setChecked(ContinuousMode);
-
-		menu.add(Menu.NONE, MenuItemIds.Resize.ordinal(), Menu.NONE,
-				R.string.Resize);
-		menu.add(Menu.NONE, MenuItemIds.WarningSecs.ordinal(), Menu.NONE,
-				R.string.WarningSecs);
-		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE,
-				R.string.Exit);
-		MenuItem RejectPassedItem=menu.add(Menu.NONE, MenuItemIds.RejectPassed.ordinal(), Menu.NONE,
+		
+		MenuItem RejectPassedItem=menu.add(Menu.NONE, MenuItemIds.RejectPassedItemId.ordinal(), Menu.NONE,
 				R.string.RejectPassed);
 		RejectPassedItem.setCheckable(true);
 		RejectPassedItem.setChecked(RejectPassed);
+
+		menu.add(Menu.NONE, MenuItemIds.ResizeTextItemId.ordinal(), Menu.NONE,
+				R.string.Resize);
+		menu.add(Menu.NONE, MenuItemIds.WarningSecsItemId.ordinal(), Menu.NONE,
+				R.string.WarningSecs);
+		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE,
+				R.string.Exit);
+
 		return true;
 	}
 
@@ -382,7 +393,7 @@ public class RunningActivity extends Activity {
 			ContinuousMode = !item.isChecked();
 			item.setChecked(ContinuousMode);
 			break;
-		case RejectPassed:
+		case RejectPassedItemId:
 			RejectPassed = !item.isChecked();
 			item.setChecked(RejectPassed);
 			break;
@@ -391,7 +402,7 @@ public class RunningActivity extends Activity {
 			dummylocmanager.removeUpdates(dummyloclistener);
 			finish();
 			break;
-		case Resize:
+		case ResizeTextItemId:
 			popUp = new Dialog(RunningActivity.this);
 			popUp.setContentView(R.layout.popupdialog);
 			popUp.setTitle("Input");
@@ -432,7 +443,7 @@ public class RunningActivity extends Activity {
 			popUp.show();
 			break;
 
-		case WarningSecs:
+		case WarningSecsItemId:
 
 			popUp = new Dialog(RunningActivity.this);
 			popUp.setContentView(R.layout.popupdialog);
