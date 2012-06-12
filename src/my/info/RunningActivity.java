@@ -129,9 +129,9 @@ public class RunningActivity extends Activity {
 		m_factor = mPrefs.getFloat("SizeFactor", 1);
 		changeSize((ViewGroup) findViewById(R.id.Running), m_factor);
 
-		ContinuousMode = mPrefs.getBoolean("ContinuousMode", false);
-		RejectPassed = mPrefs.getBoolean("RejectPassed", false);
-		WarningSecs = mPrefs.getInt("WarningSecs", 5);
+		ContinuousMode = mPrefs.getBoolean("ContinuousMode", true);
+		RejectPassed = mPrefs.getBoolean("RejectPassed", true);
+		WarningSecs = mPrefs.getInt("WarningSecs", 15);
 
 		int visible = extended ? View.VISIBLE : View.INVISIBLE;
 		Visibility(visible);
@@ -263,8 +263,8 @@ public class RunningActivity extends Activity {
 						+ p.getId());
 
 				long now = System.currentTimeMillis();
-				// if ((speed > 0) && (results[0] / speed < WarningSecs)
-				// && (lastBeepPoi != p))
+				if ((speed > 0) && (results[0] / speed < WarningSecs)
+				&& (lastBeepPoi != p))
 				{
 
 					sound.playSound(0);
@@ -350,6 +350,7 @@ public class RunningActivity extends Activity {
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.clear();
 		if (extended) {
 			MenuItem ContinuousModeItem = menu.add(Menu.NONE,
 					MenuItemIds.ContinuousModeMenuItemId.ordinal(), Menu.NONE,
