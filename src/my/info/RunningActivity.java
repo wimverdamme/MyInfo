@@ -77,44 +77,49 @@ public class RunningActivity extends Activity {
 				LocationEnabled = "Network/Gps";
 			else
 				LocationEnabled = "Gps";
-		else if (network_enabled)
-			LocationEnabled = "Network";
-		else
-		{
+		else {
+			if (network_enabled)
+				LocationEnabled = "Network";
 			// prepare the alert box
-            AlertDialog.Builder alertbox = new AlertDialog.Builder(this);
- 
-            // set the message to display
-            alertbox.setMessage("Enable Gps?");
- 
-            // add a neutral button to the alert box and assign a click listener            
-            alertbox.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
- 
-                // click listener on the alert box
-                public void onClick(DialogInterface arg0, int arg1) {
-                    // the button was clicked
-                    //Toast.makeText(getApplicationContext(), "OK button clicked", Toast.LENGTH_LONG).show();
-                    if(!locManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER ))
-        			{
-        			    Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS );
-        			    startActivity(myIntent);
-        			}
-                }
-            });
-            alertbox.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
- 
-                // click listener on the alert box
-                public void onClick(DialogInterface arg0, int arg1) {
-                    // the button was clicked
-                    //Toast.makeText(getApplicationContext(), "canel button clicked", Toast.LENGTH_LONG).show();
-                    locManager.removeUpdates(locListener);
-        			dummylocmanager.removeUpdates(dummyloclistener);
-        			finish();
-                }
-            });
- 
-            // show it
-            alertbox.show();			
+			AlertDialog.Builder alertbox = new AlertDialog.Builder(this);
+
+			// set the message to display
+			alertbox.setMessage("Enable Gps?");
+
+			// add a neutral button to the alert box and assign a click listener
+			alertbox.setNeutralButton("Ok",
+					new DialogInterface.OnClickListener() {
+
+						// click listener on the alert box
+						public void onClick(DialogInterface arg0, int arg1) {
+							// the button was clicked
+							// Toast.makeText(getApplicationContext(),
+							// "OK button clicked", Toast.LENGTH_LONG).show();
+							if (!locManager
+									.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)) {
+								Intent myIntent = new Intent(
+										Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+								startActivity(myIntent);
+							}
+						}
+					});
+			alertbox.setNegativeButton("Cancel",
+					new DialogInterface.OnClickListener() {
+
+						// click listener on the alert box
+						public void onClick(DialogInterface arg0, int arg1) {
+							// the button was clicked
+							// Toast.makeText(getApplicationContext(),
+							// "canel button clicked",
+							// Toast.LENGTH_LONG).show();
+							locManager.removeUpdates(locListener);
+							dummylocmanager.removeUpdates(dummyloclistener);
+							finish();
+						}
+					});
+
+			// show it
+			alertbox.show();
 
 		}
 		((TextView) findViewById(R.id.LocationEnabledValue))
@@ -145,7 +150,7 @@ public class RunningActivity extends Activity {
 		changeSize((ViewGroup) findViewById(R.id.Running), m_factor);
 
 		ContinuousMode = mPrefs.getBoolean("ContinuousMode", false);
-		RejectPassed = mPrefs.getBoolean("RejectPassed", false);	
+		RejectPassed = mPrefs.getBoolean("RejectPassed", false);
 		WarningSecs = mPrefs.getInt("WarningSecs", 5);
 
 		int visible = extended ? View.VISIBLE : View.INVISIBLE;
@@ -247,7 +252,7 @@ public class RunningActivity extends Activity {
 				((TextView) findViewById(R.id.UpdateTimeValue)).setText(sdf
 						.format(date));
 
-				float Bearing=location.getBearing();
+				float Bearing = location.getBearing();
 				Poi p = findClosedPoi(location.getLatitude(),
 						location.getLongitude(), Bearing);
 				float[] results = new float[3];
@@ -275,14 +280,16 @@ public class RunningActivity extends Activity {
 
 					lastBeep = now;
 					lastBeepPoi = p;
-					((TextView) findViewById(R.id.ExtendedValue)).setText(results[0]+" "+p.getId()+" "+ sdf
+					((TextView) findViewById(R.id.ExtendedValue)).setText(sdf
 							.format(date));
+					((TextView) findViewById(R.id.LocationEnabledValue))
+							.setText(""+p.getId());
 				}
 
 				if (gps_enabled) {
 					locManager.requestLocationUpdates(
 							LocationManager.GPS_PROVIDER, ContinuousMode ? 0
-									: 15000, ContinuousMode ? 0
+									: 1000, ContinuousMode ? 0
 									: results[0] / 3, locListener);
 				} else if (network_enabled) {
 					locManager.requestLocationUpdates(
@@ -306,22 +313,21 @@ public class RunningActivity extends Activity {
 				Location.distanceBetween(Latitude, Longitude, p.getLatitudeE6()
 						/ (double) 1E6, p.getLongitudeE6() / (double) 1E6,
 						results);
-				float Direction=Math.abs(results[2] - Bearing);
+				float Direction = Math.abs(results[2] - Bearing);
 				while (Direction < 0.0f) {
 					Direction += 360.0f;
-		        }
-		        while (Direction >= 360.0f) {
-		        	Direction -= 360.0f;
-		        }
+				}
+				while (Direction >= 360.0f) {
+					Direction -= 360.0f;
+				}
 				if (results[0] < closestDist
-						&& (Direction < 90 || Direction >270||!RejectPassed)) {
+						&& (Direction < 90 || Direction > 270 || !RejectPassed)) {
 					closestDist = results[0];
 					closestPoi = p;
 				}
 			}
 			return closestPoi;
 		}
-		
 
 		public void onProviderDisabled(String provider) {
 
@@ -354,7 +360,7 @@ public class RunningActivity extends Activity {
 	}
 
 	public enum MenuItemIds {
-		ContinuousModeMenuItemId, RejectPassedItemId, ResizeTextItemId, WarningSecsItemId,ExitMenuItemId
+		ContinuousModeMenuItemId, RejectPassedItemId, ResizeTextItemId, WarningSecsItemId, ExitMenuItemId
 	}
 
 	@Override
@@ -364,8 +370,9 @@ public class RunningActivity extends Activity {
 				R.string.Continuousmode);
 		ContinuousModeItem.setCheckable(true);
 		ContinuousModeItem.setChecked(ContinuousMode);
-		
-		MenuItem RejectPassedItem=menu.add(Menu.NONE, MenuItemIds.RejectPassedItemId.ordinal(), Menu.NONE,
+
+		MenuItem RejectPassedItem = menu.add(Menu.NONE,
+				MenuItemIds.RejectPassedItemId.ordinal(), Menu.NONE,
 				R.string.RejectPassed);
 		RejectPassedItem.setCheckable(true);
 		RejectPassedItem.setChecked(RejectPassed);
