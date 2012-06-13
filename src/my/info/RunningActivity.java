@@ -1,9 +1,15 @@
 package my.info;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.zip.GZIPOutputStream;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -39,8 +45,8 @@ public class RunningActivity extends Activity {
 	private boolean extended = false;
 	private boolean gps_enabled = false;
 	private LocationManager locManager, dummylocmanager;
-	private LocationListener locListener = new MyLocationListener(this),
-			dummyloclistener = new MyDummyLocationListener();
+	private MyLocationListener locListener = new MyLocationListener(this);
+	private LocationListener dummyloclistener = new MyDummyLocationListener();
 	private boolean isPlugged = false;
 	private ArrayList<Poi> PoiList = MyInfoActivity.PoiList;
 	private ArrowDirectionView Arrow;
@@ -131,6 +137,7 @@ public class RunningActivity extends Activity {
 
 		ContinuousMode = mPrefs.getBoolean("ContinuousMode", true);
 		RejectPassed = mPrefs.getBoolean("RejectPassed", true);
+		RecordPoints = mPrefs.getBoolean("RecordPoints", false);
 		WarningSecs = mPrefs.getInt("WarningSecs", 15);
 
 		int visible = extended ? View.VISIBLE : View.INVISIBLE;
@@ -205,6 +212,35 @@ public class RunningActivity extends Activity {
 		}
 	}
 
+	public static class Point {
+		public int LatitudeE6;
+		public int LongitudeE6;
+		public float Speed; /* in m/sec */
+		public long Time; /*
+						 * The UTC time of this fix, in milliseconds since
+						 * January 1, 1970.
+						 */
+		public float Altitude;
+
+		public Point(int LatitudeE6, int LongitudeE6, float Speed,
+				float Altitude, long Time) {
+			this.LatitudeE6 = LatitudeE6;
+			this.LongitudeE6 = LongitudeE6;
+			this.Speed = Speed;
+			this.Altitude = Altitude;
+			this.Time = Time;
+		}
+
+		public Point(double Latitude, double Longitude, float Speed,
+				float Altitude, long Time) {
+			this.LatitudeE6 = (int) (Latitude * 1000000);
+			this.LongitudeE6 = (int) (Longitude * 1000000);
+			this.Speed = Speed;
+			this.Altitude = Altitude;
+			this.Time = Time;
+		}
+	}
+
 	class MyLocationListener implements LocationListener {
 		Context parent;
 
@@ -216,8 +252,11 @@ public class RunningActivity extends Activity {
 		long lastBeep = 0;
 		Poi lastBeepPoi = null;
 
+		public ArrayList<Point> RecordedPoints = new ArrayList<Point>(1000);
+
 		public void onLocationChanged(Location location) {
-			if (location != null) {
+			if (location != null
+					&& (location.getLatitude() != 0 || location.getLongitude() != 0)) {
 				// This needs to stop getting the location data and save the
 				// battery power.
 				locManager.removeUpdates(locListener);
@@ -264,8 +303,7 @@ public class RunningActivity extends Activity {
 
 				long now = System.currentTimeMillis();
 				if ((speed > 0) && (results[0] / speed < WarningSecs)
-				&& (lastBeepPoi != p))
-				{
+						&& (lastBeepPoi != p)) {
 
 					sound.playSound(0);
 
@@ -275,6 +313,14 @@ public class RunningActivity extends Activity {
 							.setText(sdf.format(date));
 
 				}
+
+				if (RecordPoints)
+					this.RecordedPoints.add(new Point(location.getLatitude(),
+						location.getLongitude(), location.getSpeed(),
+						(float) location.getAltitude(), location.getTime()));
+
+				if (RecordedPoints.size() == 1000)
+					SaveRecordedPoints();
 
 				if (gps_enabled) {
 					locManager.requestLocationUpdates(
@@ -345,7 +391,7 @@ public class RunningActivity extends Activity {
 	}
 
 	public enum MenuItemIds {
-		ContinuousModeMenuItemId, RejectPassedItemId, ResizeTextItemId, WarningSecsItemId, ExitMenuItemId
+		ContinuousModeMenuItemId, RejectPassedItemId, ResizeTextItemId, WarningSecsItemId,RecordPointsItemId, ExitMenuItemId
 	}
 
 	@Override
@@ -367,7 +413,14 @@ public class RunningActivity extends Activity {
 			menu.add(Menu.NONE, MenuItemIds.ResizeTextItemId.ordinal(),
 					Menu.NONE, R.string.Resize);
 			menu.add(Menu.NONE, MenuItemIds.WarningSecsItemId.ordinal(),
-					Menu.NONE, getString(R.string.WarningSecs)+" ("+this.WarningSecs+")");
+					Menu.NONE, getString(R.string.WarningSecs) + " ("
+							+ this.WarningSecs + ")");
+			
+			MenuItem RecordPointsItem = menu.add(Menu.NONE,
+					MenuItemIds.RecordPointsItemId.ordinal(), Menu.NONE,
+					R.string.RecordPoints);
+			RecordPointsItem.setCheckable(true);
+			RecordPointsItem.setChecked(RejectPassed);
 		}
 		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE,
 				R.string.Exit);
@@ -377,6 +430,7 @@ public class RunningActivity extends Activity {
 
 	private static boolean ContinuousMode = false;
 	private static boolean RejectPassed = false;
+	private static boolean RecordPoints = false;
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -391,6 +445,10 @@ public class RunningActivity extends Activity {
 		case RejectPassedItemId:
 			RejectPassed = !item.isChecked();
 			item.setChecked(RejectPassed);
+			break;
+		case RecordPointsItemId:
+			RecordPoints = !item.isChecked();
+			item.setChecked(RecordPoints);
 			break;
 		case ExitMenuItemId:
 			locManager.removeUpdates(locListener);
@@ -510,7 +568,79 @@ public class RunningActivity extends Activity {
 		ed.putBoolean("ContinuousMode", ContinuousMode);
 		ed.putInt("WarningSecs", WarningSecs);
 		ed.putBoolean("RejectPassed", RejectPassed);
+		ed.putBoolean("RecordPoints", RecordPoints);
+		
 		ed.commit();
+		SaveRecordedPoints();
 	}
 
+	public String GetFilename(int year,int month,int day)
+	{
+		DecimalFormat df = new DecimalFormat("00");
+		String filename = "" + df.format(year)
+				+ df.format(month)
+				+ df.format(day)
+				+ ".sav";
+		return filename;
+	}
+	private void SaveRecordedPoints() {
+		if (locListener.RecordedPoints.size() > 0) {
+			Calendar c = GregorianCalendar.getInstance();
+			Date d = new Date(locListener.RecordedPoints.get(0).Time);
+			c.setTime(d);
+
+			ObjectOutputStream os = null;
+			try {
+				File file = new File(getCacheDir(), GetFilename(c.get(Calendar.YEAR),c.get(Calendar.MONTH),c.get(Calendar.DATE)));
+				if (!file.exists())
+					file.createNewFile();
+
+				os = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(file, true)));				
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			c.add(Calendar.DATE, 1);
+			c.set(Calendar.HOUR_OF_DAY, 0);
+			c.set(Calendar.MINUTE, 0);
+			c.set(Calendar.SECOND, 0);
+
+			long nextDay = c.getTimeInMillis();
+
+			for (Point point : locListener.RecordedPoints) {
+				if (point.Time > nextDay) {
+					try {
+						os.close();
+					} catch (Exception e) {
+					}
+					try {
+						File file = new File(getCacheDir(), GetFilename(c.get(Calendar.YEAR),c.get(Calendar.MONTH),c.get(Calendar.DATE)));
+						if (!file.exists())
+							file.createNewFile();
+
+						os = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(file, true)));	
+
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				try {
+					os.writeInt(point.LatitudeE6);
+					os.writeInt(point.LongitudeE6);
+					os.writeFloat(point.Speed);
+					os.writeFloat(point.Altitude);
+					os.writeLong(point.Time);
+				} catch (Exception e) {
+				}
+			}
+			try {
+				os.close();
+			} catch (Exception e) {
+			}
+			locListener.RecordedPoints.clear();
+
+		}
+
+	}
 }
