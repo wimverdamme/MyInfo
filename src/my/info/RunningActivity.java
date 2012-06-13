@@ -420,7 +420,7 @@ public class RunningActivity extends Activity {
 					MenuItemIds.RecordPointsItemId.ordinal(), Menu.NONE,
 					R.string.RecordPoints);
 			RecordPointsItem.setCheckable(true);
-			RecordPointsItem.setChecked(RejectPassed);
+			RecordPointsItem.setChecked(RecordPoints);
 		}
 		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE,
 				R.string.Exit);
