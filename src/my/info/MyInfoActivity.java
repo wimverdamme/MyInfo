@@ -3,12 +3,10 @@ package my.info;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.zip.GZIPInputStream;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -31,44 +29,68 @@ public class MyInfoActivity extends Activity {
 		setContentView(R.layout.main);
 		mPrefs = getPreferences(MODE_PRIVATE);
 		DebugMode = mPrefs.getBoolean("DebugMode", false);
-		       	
+
 	}
-	
-	private final String backupFilename = "store.bak";
+
 
 	public void onButtonSaveClick(View view) {
-		File backupFile = new File(getCacheDir(), backupFilename);
-		if (backupFile.exists())
-			backupFile.delete();
-		try {
-			backupFile.createNewFile();
-			ObjectOutputStream os = new ObjectOutputStream(
-					new FileOutputStream(backupFile));
-			os.writeObject(PoiList.toArray(new Poi[0]));
-			os.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+		Intent intent = new Intent(getBaseContext(), FileDialog.class);
+		intent.putExtra(FileDialog.START_PATH, "/sdcard");
+
+		// can user select directories or not
+		intent.putExtra(FileDialog.CAN_SELECT_DIR, true);
+		intent.putExtra(FileDialog.SELECT_ONLY_DIR, true);
+
+		startActivityForResult(intent, REQUEST_LOAD);
+	}
+
+	static final int REQUEST_LOAD = 1;
+	static final int REQUEST_SAVE = 2;
+
+	public synchronized void onActivityResult(final int requestCode,
+			int resultCode, final Intent data) {
+
+		if (resultCode == Activity.RESULT_OK) {
+
+			String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
+			Toast.makeText(this, "Saving to: " + filePath, Toast.LENGTH_SHORT)
+					.show();
+
+			File[] files = new File(getCacheDir(), "").listFiles();
+			for (File f : files) {
+				String filename = f.getName();
+				if (filename.endsWith(".sav")) {
+					String trackName = filename.substring(0,
+							filename.length() - 4);
+					try {
+						ArrayList<RunningActivity.Point> points = new ArrayList<RunningActivity.Point>();
+						ObjectInputStream is = new ObjectInputStream(
+								new GZIPInputStream(new FileInputStream(
+										getCacheDir()+"/"+filename)));
+						while (is.available() > 0) {
+
+							points.add(new RunningActivity.Point(is.readInt(),
+									is.readInt(), is.readFloat(), is
+											.readFloat(), is.readLong()));
+						}
+
+						File gpxFile = new File(filePath + "/" + trackName
+								+ ".gpx");
+						GPXFileWriter.writeGpxFile(trackName, points, gpxFile);
+						
+						// TODO Append to existing file + check if points are already in.
+					} catch (Exception e) {
+					}
+				}
+			}
+
+		} else if (resultCode == Activity.RESULT_CANCELED) {
+
 		}
+
 	}
 
 	public void onButtonLoadClick(View view) {
-		File backupFile = new File(getCacheDir(), backupFilename);
-		if (backupFile.exists())
-			try {
-				ObjectInputStream is = new ObjectInputStream(
-						new FileInputStream(backupFile));
-
-				PoiList = new ArrayList<Poi>(Arrays.asList((Poi[]) is
-						.readObject()));
-
-				if (PoiList.size() > 0) {
-					((TextView) findViewById(R.id.NrOfPoisFound)).setText(""
-							+ PoiList.size());
-				}
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 
 	}
 
@@ -112,10 +134,10 @@ public class MyInfoActivity extends Activity {
 					final TextView tv2 = ((TextView) findViewById(R.id.NrOfPoisFound));
 					try {
 						list = mgr.list(path);
-						int filecount=1;
+						int filecount = 1;
 						for (String f : list)
 							if (f.toLowerCase().endsWith(".csv")) {
-								final String text = ""+filecount++;
+								final String text = "" + filecount++;
 								tv.post(new Runnable() {
 									public void run() {
 										tv.setText(text);
@@ -149,8 +171,8 @@ public class MyInfoActivity extends Activity {
 									Poi p = new Poi((int) (Latitude * 1E6),
 											(int) (Longitude * 1E6), Type);
 									PoiList.add(p);
-//									if (UseDatabase)
-//										m_poiDB.insertPoi(p);
+									// if (UseDatabase)
+									// m_poiDB.insertPoi(p);
 								}
 								final String text2 = "" + PoiList.size();
 								tv.post(new Runnable() {
@@ -187,13 +209,12 @@ public class MyInfoActivity extends Activity {
 				Menu.NONE, R.string.Debugmode);
 		DebugModeItem.setCheckable(true);
 		DebugModeItem.setChecked(DebugMode);
-		
+
 		menu.add(Menu.NONE, ExitMenuItemId, Menu.NONE, R.string.Exit);
 		return true;
 	}
 
 	private boolean DebugMode = false;
-	
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
