@@ -135,7 +135,7 @@ public class RunningActivity extends Activity {
 		mPrefs = getPreferences(MODE_PRIVATE);
 		m_factor = mPrefs.getFloat("SizeFactor", 1);
 		changeSize((ViewGroup) findViewById(R.id.Running), m_factor);
-		
+
 		RejectPassed = mPrefs.getBoolean("RejectPassed", true);
 		RecordPoints = mPrefs.getBoolean("RecordPoints", false);
 		WarningSecs = mPrefs.getInt("WarningSecs", 15);
@@ -251,6 +251,7 @@ public class RunningActivity extends Activity {
 
 		long lastBeep = 0;
 		Poi lastBeepPoi = null;
+		long lastStoredPoint = 0;
 
 		public ArrayList<Point> RecordedPoints = new ArrayList<Point>(1000);
 
@@ -312,15 +313,21 @@ public class RunningActivity extends Activity {
 
 				}
 
-				if (RecordPoints)
-					this.RecordedPoints.add(new Point(location.getLatitude(),
-						location.getLongitude(), location.getSpeed(),
-						(float) location.getAltitude(), location.getTime()));
+				if (RecordPoints
+						&& (lastStoredPoint + 1000 < location.getTime())) {
+					this.RecordedPoints
+							.add(new Point(location.getLatitude(), location
+									.getLongitude(), location.getSpeed(),
+									(float) location.getAltitude(), location
+											.getTime()));
+					lastStoredPoint = location.getTime();
+				}
 
 				if (RecordedPoints.size() == 1000)
 					SaveRecordedPoints();
 
 			}
+
 		}
 
 		public Poi findClosedPoi(double Latitude, double Longitude,
@@ -382,14 +389,14 @@ public class RunningActivity extends Activity {
 	}
 
 	public enum MenuItemIds {
-		RejectPassedItemId, ResizeTextItemId, WarningSecsItemId,RecordPointsItemId, ExitMenuItemId
+		RejectPassedItemId, ResizeTextItemId, WarningSecsItemId, RecordPointsItemId, ExitMenuItemId
 	}
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		menu.clear();
 		if (extended) {
-			
+
 			MenuItem RejectPassedItem = menu.add(Menu.NONE,
 					MenuItemIds.RejectPassedItemId.ordinal(), Menu.NONE,
 					R.string.RejectPassed);
@@ -401,7 +408,7 @@ public class RunningActivity extends Activity {
 			menu.add(Menu.NONE, MenuItemIds.WarningSecsItemId.ordinal(),
 					Menu.NONE, getString(R.string.WarningSecs) + " ("
 							+ this.WarningSecs + ")");
-			
+
 			MenuItem RecordPointsItem = menu.add(Menu.NONE,
 					MenuItemIds.RecordPointsItemId.ordinal(), Menu.NONE,
 					R.string.RecordPoints);
@@ -413,7 +420,7 @@ public class RunningActivity extends Activity {
 
 		return true;
 	}
-	
+
 	private static boolean RejectPassed = false;
 	private static boolean RecordPoints = false;
 
@@ -545,25 +552,23 @@ public class RunningActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		SharedPreferences.Editor ed = mPrefs.edit();
-		ed.putFloat("SizeFactor", m_factor);		
+		ed.putFloat("SizeFactor", m_factor);
 		ed.putInt("WarningSecs", WarningSecs);
 		ed.putBoolean("RejectPassed", RejectPassed);
 		ed.putBoolean("RecordPoints", RecordPoints);
-		
+
 		ed.commit();
 		SaveRecordedPoints();
 		Toast.makeText(this, "Stopped", Toast.LENGTH_SHORT).show();
 	}
 
-	public String GetFilename(int year,int month,int day)
-	{
+	public String GetFilename(int year, int month, int day) {
 		DecimalFormat df = new DecimalFormat("00");
-		String filename = "" + df.format(year)
-				+ df.format(month)
-				+ df.format(day)
-				+ ".sav";
+		String filename = "" + df.format(year) + df.format(month)
+				+ df.format(day) + ".sav";
 		return filename;
 	}
+
 	private void SaveRecordedPoints() {
 		if (locListener.RecordedPoints.size() > 0) {
 			Calendar c = GregorianCalendar.getInstance();
@@ -572,11 +577,14 @@ public class RunningActivity extends Activity {
 
 			ObjectOutputStream os = null;
 			try {
-				File file = new File(getCacheDir(), GetFilename(c.get(Calendar.YEAR),c.get(Calendar.MONTH),c.get(Calendar.DATE)));
+				File file = new File(getCacheDir(), GetFilename(
+						c.get(Calendar.YEAR), c.get(Calendar.MONTH),
+						c.get(Calendar.DATE)));
 				if (!file.exists())
 					file.createNewFile();
 
-				os = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(file, true)));				
+				os = new ObjectOutputStream(new GZIPOutputStream(
+						new FileOutputStream(file, true)));
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -596,11 +604,14 @@ public class RunningActivity extends Activity {
 					} catch (Exception e) {
 					}
 					try {
-						File file = new File(getCacheDir(), GetFilename(c.get(Calendar.YEAR),c.get(Calendar.MONTH),c.get(Calendar.DATE)));
+						File file = new File(getCacheDir(), GetFilename(
+								c.get(Calendar.YEAR), c.get(Calendar.MONTH),
+								c.get(Calendar.DATE)));
 						if (!file.exists())
 							file.createNewFile();
 
-						os = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(file, true)));	
+						os = new ObjectOutputStream(new GZIPOutputStream(
+								new FileOutputStream(file, true)));
 
 					} catch (Exception e) {
 						e.printStackTrace();
