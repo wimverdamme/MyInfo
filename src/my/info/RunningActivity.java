@@ -37,6 +37,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class RunningActivity extends Activity {
 
@@ -134,8 +135,7 @@ public class RunningActivity extends Activity {
 		mPrefs = getPreferences(MODE_PRIVATE);
 		m_factor = mPrefs.getFloat("SizeFactor", 1);
 		changeSize((ViewGroup) findViewById(R.id.Running), m_factor);
-
-		ContinuousMode = mPrefs.getBoolean("ContinuousMode", true);
+		
 		RejectPassed = mPrefs.getBoolean("RejectPassed", true);
 		RecordPoints = mPrefs.getBoolean("RecordPoints", false);
 		WarningSecs = mPrefs.getInt("WarningSecs", 15);
@@ -257,9 +257,7 @@ public class RunningActivity extends Activity {
 		public void onLocationChanged(Location location) {
 			if (location != null
 					&& (location.getLatitude() != 0 || location.getLongitude() != 0)) {
-				// This needs to stop getting the location data and save the
-				// battery power.
-				locManager.removeUpdates(locListener);
+
 				DecimalFormat df = new DecimalFormat("#.0000");
 				((TextView) findViewById(R.id.LongitudeValue)).setText(df
 						.format(location.getLongitude()));
@@ -321,13 +319,6 @@ public class RunningActivity extends Activity {
 
 				if (RecordedPoints.size() == 1000)
 					SaveRecordedPoints();
-
-				if (gps_enabled) {
-					locManager.requestLocationUpdates(
-							LocationManager.GPS_PROVIDER, ContinuousMode ? 0
-									: 1000,
-							ContinuousMode ? 0 : results[0] / 3, locListener);
-				}
 
 			}
 		}
@@ -391,19 +382,14 @@ public class RunningActivity extends Activity {
 	}
 
 	public enum MenuItemIds {
-		ContinuousModeMenuItemId, RejectPassedItemId, ResizeTextItemId, WarningSecsItemId,RecordPointsItemId, ExitMenuItemId
+		RejectPassedItemId, ResizeTextItemId, WarningSecsItemId,RecordPointsItemId, ExitMenuItemId
 	}
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		menu.clear();
 		if (extended) {
-			MenuItem ContinuousModeItem = menu.add(Menu.NONE,
-					MenuItemIds.ContinuousModeMenuItemId.ordinal(), Menu.NONE,
-					R.string.Continuousmode);
-			ContinuousModeItem.setCheckable(true);
-			ContinuousModeItem.setChecked(ContinuousMode);
-
+			
 			MenuItem RejectPassedItem = menu.add(Menu.NONE,
 					MenuItemIds.RejectPassedItemId.ordinal(), Menu.NONE,
 					R.string.RejectPassed);
@@ -427,8 +413,7 @@ public class RunningActivity extends Activity {
 
 		return true;
 	}
-
-	private static boolean ContinuousMode = false;
+	
 	private static boolean RejectPassed = false;
 	private static boolean RecordPoints = false;
 
@@ -438,10 +423,6 @@ public class RunningActivity extends Activity {
 		EditText et;
 		oldfactor = m_factor;
 		switch (MenuItemIds.values()[item.getItemId()]) {
-		case ContinuousModeMenuItemId:
-			ContinuousMode = !item.isChecked();
-			item.setChecked(ContinuousMode);
-			break;
 		case RejectPassedItemId:
 			RejectPassed = !item.isChecked();
 			item.setChecked(RejectPassed);
@@ -564,14 +545,14 @@ public class RunningActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		SharedPreferences.Editor ed = mPrefs.edit();
-		ed.putFloat("SizeFactor", m_factor);
-		ed.putBoolean("ContinuousMode", ContinuousMode);
+		ed.putFloat("SizeFactor", m_factor);		
 		ed.putInt("WarningSecs", WarningSecs);
 		ed.putBoolean("RejectPassed", RejectPassed);
 		ed.putBoolean("RecordPoints", RecordPoints);
 		
 		ed.commit();
 		SaveRecordedPoints();
+		Toast.makeText(this, "Stopped", Toast.LENGTH_SHORT).show();
 	}
 
 	public String GetFilename(int year,int month,int day)
