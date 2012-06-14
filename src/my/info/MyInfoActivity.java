@@ -3,8 +3,11 @@ package my.info;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 
@@ -32,8 +35,7 @@ public class MyInfoActivity extends Activity {
 
 	}
 
-
-	public void onButtonSaveClick(View view) {
+	public void onButtonExportSaveClick(View view) {
 		Intent intent = new Intent(getBaseContext(), FileDialog.class);
 		intent.putExtra(FileDialog.START_PATH, "/sdcard");
 
@@ -41,10 +43,13 @@ public class MyInfoActivity extends Activity {
 		intent.putExtra(FileDialog.CAN_SELECT_DIR, true);
 		intent.putExtra(FileDialog.SELECT_ONLY_DIR, true);
 
-		startActivityForResult(intent, REQUEST_LOAD);
+		if (view.getId()==R.id.ExportButton)
+			startActivityForResult(intent, REQUEST_EXPORT);
+		else if (view.getId()==R.id.SaveButton)
+			startActivityForResult(intent, REQUEST_SAVE);
 	}
 
-	static final int REQUEST_LOAD = 1;
+	static final int REQUEST_EXPORT = 1;
 	static final int REQUEST_SAVE = 2;
 
 	public synchronized void onActivityResult(final int requestCode,
@@ -52,37 +57,73 @@ public class MyInfoActivity extends Activity {
 
 		if (resultCode == Activity.RESULT_OK) {
 
+			String Action = "";
+			if (requestCode == REQUEST_SAVE) {
+				Action = "Saving to: ";
+			} else if (requestCode == REQUEST_EXPORT) {
+				Action = "Exporting to: ";
+			}
+
 			String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
-			Toast.makeText(this, "Saving to: " + filePath, Toast.LENGTH_SHORT)
-					.show();
+			Toast.makeText(this, Action + filePath, Toast.LENGTH_SHORT).show();
+			if (requestCode == REQUEST_EXPORT) {
+				File[] files = new File(getCacheDir(), "").listFiles();
+				for (File f : files) {
+					String filename = f.getName();
+					if (filename.endsWith(".sav")) {
+						String trackName = filename.substring(0,
+								filename.length() - 4);
+						try {
+							ArrayList<RunningActivity.Point> points = new ArrayList<RunningActivity.Point>();
+							ObjectInputStream is = new ObjectInputStream(
+									new GZIPInputStream(new FileInputStream(
+											getCacheDir() + "/" + filename)));
+							while (is.available() > 0) {
 
-			File[] files = new File(getCacheDir(), "").listFiles();
-			for (File f : files) {
-				String filename = f.getName();
-				if (filename.endsWith(".sav")) {
-					String trackName = filename.substring(0,
-							filename.length() - 4);
-					try {
-						ArrayList<RunningActivity.Point> points = new ArrayList<RunningActivity.Point>();
-						ObjectInputStream is = new ObjectInputStream(
-								new GZIPInputStream(new FileInputStream(
-										getCacheDir()+"/"+filename)));
-						while (is.available() > 0) {
+								points.add(new RunningActivity.Point(is
+										.readInt(), is.readInt(), is
+										.readFloat(), is.readFloat(), is
+										.readLong()));
+							}
 
-							points.add(new RunningActivity.Point(is.readInt(),
-									is.readInt(), is.readFloat(), is
-											.readFloat(), is.readLong()));
+							File gpxFile = new File(filePath + "/" + trackName
+									+ ".gpx");
+							GPXFileWriter.writeGpxFile(trackName, points,
+									gpxFile);
+
+						} catch (Exception e) {
 						}
-
-						File gpxFile = new File(filePath + "/" + trackName
-								+ ".gpx");
-						GPXFileWriter.writeGpxFile(trackName, points, gpxFile);
-						
-						// TODO Append to existing file + check if points are already in.
-					} catch (Exception e) {
 					}
 				}
 			}
+			if (requestCode == REQUEST_SAVE) {
+				File[] files = new File(getCacheDir(), "").listFiles();
+				for (File f : files) {
+					String filename = f.getName();
+					if (filename.endsWith(".sav")) {
+						InputStream in = null;
+				        OutputStream out = null;
+				        try {
+				          in = new FileInputStream(f);
+				          out = new FileOutputStream(filePath+"/" + filename);
+				          byte[] buffer = new byte[1024];
+				          int read;
+				          while((read = in.read(buffer)) != -1){
+				            out.write(buffer, 0, read);
+				          }
+
+				          in.close();
+				          in = null;
+				          out.flush();
+				          out.close();
+				          out = null;
+				        } catch(Exception e) {
+				            
+				        } 
+					}
+				}
+			}
+			Toast.makeText(this, "Done", Toast.LENGTH_SHORT).show();
 
 		} else if (resultCode == Activity.RESULT_CANCELED) {
 
