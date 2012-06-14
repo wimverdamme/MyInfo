@@ -43,6 +43,7 @@
     <color name="gray">#ffff0000</color>
     <string name="err">Error</string>
     <string name="RecordPoints">RecordPoints</string>
+    <string name="Export">Export</string>
     
 
 </resources>

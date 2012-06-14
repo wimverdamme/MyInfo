@@ -57,20 +57,20 @@
         android:layout_height="wrap_content" >
 
         <Button
+            android:id="@+id/ExportButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onButtonExportSaveClick"
+            android:text="@string/Export" />
+
+        <Button
             android:id="@+id/SaveButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:onClick="onButtonSaveClick"
+            android:onClick="onButtonExportSaveClick"
             android:text="@string/Save" />
-
-        <Button
-            android:id="@+id/LoadButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:onClick="onButtonLoadClick"
-            android:text="@string/Load" />
     </LinearLayout>
 
     <LinearLayout
