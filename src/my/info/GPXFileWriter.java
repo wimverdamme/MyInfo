@@ -66,6 +66,7 @@ public class GPXFileWriter {
                         + "lon=\"" + point.LongitudeE6/(double)1000000 + "\">");
             	out.append("<ele>" + point.Altitude + "</ele>");
             	out.append("<time>" + POINT_DATE_FORMATTER.format(new Date(point.Time)) + "</time>");
+            	out.append("<speed>" + point.Speed + "</speed>");
             	out.append("</trkpt>" + "\n");
                 fw.write(out.toString());
             }

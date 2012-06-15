@@ -26,6 +26,7 @@ import android.location.LocationManager;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,9 +46,8 @@ public class RunningActivity extends Activity {
 
 	private boolean extended = false;
 	private boolean gps_enabled = false;
-	private LocationManager locManager, dummylocmanager;
-	private MyLocationListener locListener = new MyLocationListener(this);
-	private LocationListener dummyloclistener = new MyDummyLocationListener();
+	private LocationManager locManager;
+	private MyLocationListener locListener = new MyLocationListener(this);	
 	private boolean isPlugged = false;
 	private ArrayList<Poi> PoiList = MyInfoActivity.PoiList;
 	private ArrowDirectionView Arrow;
@@ -57,17 +57,18 @@ public class RunningActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		Log.i("RunningActivity", "onCreate()");
+		
 		setContentView(R.layout.running);
 		extended = getIntent().getExtras().getBoolean("Extended");
 
 		locManager = (LocationManager) this
-				.getSystemService(Context.LOCATION_SERVICE);
-		dummylocmanager = (LocationManager) this
-				.getSystemService(Context.LOCATION_SERVICE);
+				.getSystemService(Context.LOCATION_SERVICE);		
 		try {
 			gps_enabled = locManager
 					.isProviderEnabled(LocationManager.GPS_PROVIDER);
 		} catch (Exception ex) {
+			Log.i("RunningActivity", "onCreate() gps disabled - "+ex.getMessage());
 		}
 
 		if (!gps_enabled) {
@@ -104,7 +105,6 @@ public class RunningActivity extends Activity {
 							// "canel button clicked",
 							// Toast.LENGTH_LONG).show();
 							locManager.removeUpdates(locListener);
-							dummylocmanager.removeUpdates(dummyloclistener);
 							finish();
 						}
 					});
@@ -117,11 +117,7 @@ public class RunningActivity extends Activity {
 
 		if (gps_enabled) {
 			locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
-					0, locListener);
-			dummylocmanager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, 3600000, 100000,
-					dummyloclistener);
-
+					0, locListener);			
 		}
 
 		this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(
@@ -439,8 +435,9 @@ public class RunningActivity extends Activity {
 			item.setChecked(RecordPoints);
 			break;
 		case ExitMenuItemId:
-			locManager.removeUpdates(locListener);
-			dummylocmanager.removeUpdates(dummyloclistener);
+			locManager.removeUpdates(locListener);			
+			SaveRecordedPoints();
+			Toast.makeText(this, "Stopped", Toast.LENGTH_SHORT).show();
 			finish();
 			break;
 		case ResizeTextItemId:
@@ -471,6 +468,7 @@ public class RunningActivity extends Activity {
 					try {
 						m_factor = Float.parseFloat(Info);
 					} catch (NumberFormatException e) {
+						Log.i("RunningActivity", "resize NumberFormatException "+ e.getMessage());
 					}
 
 					popUp.dismiss();
@@ -512,6 +510,7 @@ public class RunningActivity extends Activity {
 					try {
 						WarningSecs = Integer.parseInt(Info);
 					} catch (NumberFormatException e) {
+						Log.i("RunningActivity", "Warning secs NumberFormatException - "+e.getMessage());
 					}
 
 					popUp.dismiss();
@@ -571,6 +570,7 @@ public class RunningActivity extends Activity {
 
 	private void SaveRecordedPoints() {
 		if (locListener.RecordedPoints.size() > 0) {
+			Log.i("RunningActivity", "SaveRecordedPoints() Started");
 			Calendar c = GregorianCalendar.getInstance();
 			Date d = new Date(locListener.RecordedPoints.get(0).Time);
 			c.setTime(d);
@@ -587,7 +587,7 @@ public class RunningActivity extends Activity {
 						new FileOutputStream(file, true)));
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				Log.i("RunningActivity", "SaveRecordedPoints() File"+e.getMessage());
 			}
 
 			c.add(Calendar.DATE, 1);
@@ -602,6 +602,7 @@ public class RunningActivity extends Activity {
 					try {
 						os.close();
 					} catch (Exception e) {
+						Log.i("RunningActivity", "SaveRecordedPoints() close"+e.getMessage());
 					}
 					try {
 						File file = new File(getCacheDir(), GetFilename(
@@ -614,7 +615,7 @@ public class RunningActivity extends Activity {
 								new FileOutputStream(file, true)));
 
 					} catch (Exception e) {
-						e.printStackTrace();
+						Log.i("RunningActivity", "SaveRecordedPoints() file 3 "+e.getMessage());
 					}
 				}
 				try {
@@ -624,14 +625,16 @@ public class RunningActivity extends Activity {
 					os.writeFloat(point.Altitude);
 					os.writeLong(point.Time);
 				} catch (Exception e) {
+					Log.i("RunningActivity", "SaveRecordedPoints() write"+e.getMessage());
 				}
 			}
 			try {
 				os.close();
 			} catch (Exception e) {
+				Log.i("RunningActivity", "SaveRecordedPoints() close 2"+e.getMessage());
 			}
 			locListener.RecordedPoints.clear();
-
+			Log.i("RunningActivity", "SaveRecordedPoints() Ended");
 		}
 
 	}

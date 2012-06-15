@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +33,7 @@ public class MyInfoActivity extends Activity {
 		setContentView(R.layout.main);
 		mPrefs = getPreferences(MODE_PRIVATE);
 		DebugMode = mPrefs.getBoolean("DebugMode", false);
+		Log.i("MyInfoActivity", "onCreate()");
 
 	}
 
@@ -55,17 +57,17 @@ public class MyInfoActivity extends Activity {
 	public synchronized void onActivityResult(final int requestCode,
 			int resultCode, final Intent data) {
 
-		if (resultCode == Activity.RESULT_OK) {
-
+		if (resultCode == Activity.RESULT_OK) {			
 			String Action = "";
 			if (requestCode == REQUEST_SAVE) {
 				Action = "Saving to: ";
 			} else if (requestCode == REQUEST_EXPORT) {
 				Action = "Exporting to: ";
-			}
+			}			
 
 			String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
-			Toast.makeText(this, Action + filePath, Toast.LENGTH_SHORT).show();
+			Log.i("MyInfoActivity", "onActivityResult()"+" "+Action + filePath);
+			Toast.makeText(this, Action + filePath, Toast.LENGTH_SHORT).show();			
 			if (requestCode == REQUEST_EXPORT) {
 				File[] files = new File(getCacheDir(), "").listFiles();
 				for (File f : files) {
@@ -92,6 +94,7 @@ public class MyInfoActivity extends Activity {
 									gpxFile);
 
 						} catch (Exception e) {
+							Log.i("MyInfoActivity", "onActivityResult() export writeGpxFile "+e.getMessage());
 						}
 					}
 				}
@@ -118,11 +121,12 @@ public class MyInfoActivity extends Activity {
 				          out.close();
 				          out = null;
 				        } catch(Exception e) {
-				            
+				        	Log.i("MyInfoActivity", "onActivityResult() save writeGpxFile "+e.getMessage());
 				        } 
 					}
 				}
 			}
+			Log.i("MyInfoActivity", "onActivityResult()"+" Done");
 			Toast.makeText(this, "Done", Toast.LENGTH_SHORT).show();
 
 		} else if (resultCode == Activity.RESULT_CANCELED) {
@@ -226,7 +230,7 @@ public class MyInfoActivity extends Activity {
 							}
 
 					} catch (Exception e) {
-						;
+						Log.i("MyInfoActivity", "onButtonConvertClick() Convert "+e.getMessage());
 					}
 
 					tv.post(new Runnable() {
