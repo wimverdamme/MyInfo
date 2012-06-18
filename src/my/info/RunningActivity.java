@@ -153,6 +153,8 @@ public class RunningActivity extends Activity {
 
 	public void Visibility(int visible) {
 
+		visible= View.VISIBLE;
+		
 		findViewById(R.id.ChargerConnected).setVisibility(visible);
 		findViewById(R.id.ChargerConnectedValue).setVisibility(visible);
 		findViewById(R.id.Distance).setVisibility(visible);
@@ -167,6 +169,9 @@ public class RunningActivity extends Activity {
 		findViewById(R.id.TypeValue).setVisibility(visible);
 		findViewById(R.id.DirectionArrow).setVisibility(visible);
 		Arrow.setVisibility(visible);
+		
+		if (visible!=View.VISIBLE)
+			ChangeTextToHidden();
 
 	}
 
@@ -182,7 +187,6 @@ public class RunningActivity extends Activity {
 							+ " " + plugged);
 			if (extended && plugged == 0) {
 				extended = false;
-				ChangeTextToHidden();
 			}
 			int visible = (extended && plugged != 0) ? View.VISIBLE
 					: View.INVISIBLE;
@@ -318,7 +322,12 @@ public class RunningActivity extends Activity {
 				}
 
 				if (RecordedPoints.size() == 1000)
+				{
+					locManager.removeUpdates(locListener);
 					SaveRecordedPoints();
+					locManager.requestLocationUpdates(
+								LocationManager.GPS_PROVIDER, 0, 0 , locListener);
+				}
 
 			}
 
@@ -555,7 +564,10 @@ public class RunningActivity extends Activity {
 		ed.putBoolean("RecordPoints", RecordPoints);
 
 		ed.commit();
+		locManager.removeUpdates(locListener);
 		SaveRecordedPoints();
+		locManager.requestLocationUpdates(
+					LocationManager.GPS_PROVIDER, 0, 0 , locListener);		
 		Toast.makeText(this, "Stopped", Toast.LENGTH_SHORT).show();
 	}
 
@@ -632,6 +644,5 @@ public class RunningActivity extends Activity {
 			}
 			locListener.RecordedPoints.clear();			
 		}
-
 	}
 }

@@ -32,7 +32,9 @@ public class MyInfoActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		mPrefs = getPreferences(MODE_PRIVATE);
-		DebugMode = mPrefs.getBoolean("DebugMode", false);		
+		DebugMode = mPrefs.getBoolean("DebugMode", false);	
+		if (PoiList.isEmpty())
+			Convert();
 	}
 
 	public void onButtonExportSaveClick(View view) {
@@ -161,6 +163,11 @@ public class MyInfoActivity extends Activity {
 
 	public void onButtonConvertClick(View view) {
 
+		Convert();
+
+	}
+
+	private void Convert() {
 		if (!Converting) {
 			PoiList.clear();
 			Converting = true;
@@ -238,7 +245,6 @@ public class MyInfoActivity extends Activity {
 				}
 			}).start();
 		}
-
 	}
 
 	final int DebugModeMenuItemId = 0;
