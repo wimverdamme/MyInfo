@@ -55,9 +55,7 @@ public class RunningActivity extends Activity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
-		Log.i("RunningActivity", "onCreate()");
+		super.onCreate(savedInstanceState);		
 		
 		setContentView(R.layout.running);
 		extended = getIntent().getExtras().getBoolean("Extended");
@@ -569,8 +567,7 @@ public class RunningActivity extends Activity {
 	}
 
 	private void SaveRecordedPoints() {
-		if (locListener.RecordedPoints.size() > 0) {
-			Log.i("RunningActivity", "SaveRecordedPoints() Started");
+		if (locListener.RecordedPoints.size() > 0) {			
 			Calendar c = GregorianCalendar.getInstance();
 			Date d = new Date(locListener.RecordedPoints.get(0).Time);
 			c.setTime(d);
@@ -633,8 +630,7 @@ public class RunningActivity extends Activity {
 			} catch (Exception e) {
 				Log.i("RunningActivity", "SaveRecordedPoints() close 2"+e.getMessage());
 			}
-			locListener.RecordedPoints.clear();
-			Log.i("RunningActivity", "SaveRecordedPoints() Ended");
+			locListener.RecordedPoints.clear();			
 		}
 
 	}

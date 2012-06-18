@@ -32,9 +32,7 @@ public class MyInfoActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		mPrefs = getPreferences(MODE_PRIVATE);
-		DebugMode = mPrefs.getBoolean("DebugMode", false);
-		Log.i("MyInfoActivity", "onCreate()");
-
+		DebugMode = mPrefs.getBoolean("DebugMode", false);		
 	}
 
 	public void onButtonExportSaveClick(View view) {
@@ -65,8 +63,7 @@ public class MyInfoActivity extends Activity {
 				Action = "Exporting to: ";
 			}			
 
-			String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
-			Log.i("MyInfoActivity", "onActivityResult()"+" "+Action + filePath);
+			String filePath = data.getStringExtra(FileDialog.RESULT_PATH);			
 			Toast.makeText(this, Action + filePath, Toast.LENGTH_SHORT).show();			
 			if (requestCode == REQUEST_EXPORT) {
 				File[] files = new File(getCacheDir(), "").listFiles();
@@ -125,8 +122,7 @@ public class MyInfoActivity extends Activity {
 				        } 
 					}
 				}
-			}
-			Log.i("MyInfoActivity", "onActivityResult()"+" Done");
+			}			
 			Toast.makeText(this, "Done", Toast.LENGTH_SHORT).show();
 
 		} else if (resultCode == Activity.RESULT_CANCELED) {
