@@ -74,7 +74,7 @@ public class RunningActivity extends Activity {
 			AlertDialog.Builder alertbox = new AlertDialog.Builder(this);
 
 			// set the message to display
-			alertbox.setMessage("Enable Gps?");
+			alertbox.setMessage("Gps need to be enabled. Enable Gps?");
 
 			// add a neutral button to the alert box and assign a click listener
 			alertbox.setNeutralButton("Ok",

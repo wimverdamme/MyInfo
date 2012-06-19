@@ -8,12 +8,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.zip.GZIPInputStream;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -248,7 +252,8 @@ public class MyInfoActivity extends Activity {
 	}
 
 	final int DebugModeMenuItemId = 0;
-	final int ExitMenuItemId = 1;
+	final int AboutItemId = 1;
+	final int ExitMenuItemId = 2;
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -256,7 +261,9 @@ public class MyInfoActivity extends Activity {
 				Menu.NONE, R.string.Debugmode);
 		DebugModeItem.setCheckable(true);
 		DebugModeItem.setChecked(DebugMode);
-
+		
+		menu.add(Menu.NONE, AboutItemId, Menu.NONE, R.string.About);
+		
 		menu.add(Menu.NONE, ExitMenuItemId, Menu.NONE, R.string.Exit);
 		return true;
 	}
@@ -269,6 +276,20 @@ public class MyInfoActivity extends Activity {
 		case DebugModeMenuItemId:
 			DebugMode = !item.isChecked();
 			item.setChecked(DebugMode);
+			break;
+		case AboutItemId:
+			AlertDialog.Builder alertbox = new AlertDialog.Builder(this);	
+			PackageInfo packageInfo = new PackageInfo();
+			try{
+				packageInfo=getPackageManager().getPackageInfo(getPackageName(), 0);}catch (Exception e){}
+			long BuildDate=packageInfo.lastUpdateTime;
+			Date d=new Date(BuildDate);			
+			SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss Z z");	
+//			sdf.setTimeZone(TimeZone.getDefault());
+
+			alertbox.setMessage("Version: "+packageInfo.versionName+" ("+packageInfo.versionCode+")\n\n"+"Build-Date: "+sdf.format(d));
+			alertbox.setNeutralButton("Ok",null);
+			alertbox.show();
 			break;
 		case ExitMenuItemId:
 			finish();
