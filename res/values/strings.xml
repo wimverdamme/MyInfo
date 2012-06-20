@@ -44,6 +44,8 @@
     <string name="RecordPoints">RecordPoints</string>
     <string name="Export">Export</string>
     <string name="About">About...</string>
+    <string name="RecordIntervalSecs">RecordInterval</string>
+    
     
 
 </resources>

@@ -83,6 +83,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Test"
+            android:onClick="onButtonTestSaveClick" />
+
         <TextView
             android:id="@+id/NrOfPoisFound"
             android:layout_width="match_parent"
