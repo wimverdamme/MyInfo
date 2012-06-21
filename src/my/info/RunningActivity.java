@@ -312,7 +312,7 @@ public class RunningActivity extends Activity {
 				}
 
 				if (RecordPoints
-						&& (lastStoredPoint + 1000 < location.getTime())) {
+						&& (lastStoredPoint + 1000 <= location.getTime())) {
 					this.RecordedPoints
 							.add(new Point(location.getLatitude(), location
 									.getLongitude(), location.getSpeed(),
