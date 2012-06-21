@@ -133,7 +133,6 @@ public class RunningActivity extends Activity {
 		RejectPassed = mPrefs.getBoolean("RejectPassed", true);
 		RecordPoints = mPrefs.getBoolean("RecordPoints", false);
 		WarningSecs = mPrefs.getInt("WarningSecs", 15);
-		RecordIntervalSecs = mPrefs.getInt("RecordIntervalSecs", 5);		
 
 		int visible = extended ? View.VISIBLE : View.INVISIBLE;
 		Visibility(visible);
@@ -313,7 +312,7 @@ public class RunningActivity extends Activity {
 				}
 
 				if (RecordPoints
-						&& (lastStoredPoint + RecordIntervalSecs*1000 <= location.getTime())) {
+						&& (lastStoredPoint + 1000 < location.getTime())) {
 					this.RecordedPoints
 							.add(new Point(location.getLatitude(), location
 									.getLongitude(), location.getSpeed(),
@@ -393,7 +392,7 @@ public class RunningActivity extends Activity {
 	}
 
 	public enum MenuItemIds {
-		RejectPassedItemId, ResizeTextItemId,RecordIntervalSecsId, WarningSecsItemId, RecordPointsItemId, ExitMenuItemId
+		RejectPassedItemId, ResizeTextItemId, WarningSecsItemId, RecordPointsItemId, ExitMenuItemId
 	}
 
 	@Override
@@ -418,11 +417,6 @@ public class RunningActivity extends Activity {
 					R.string.RecordPoints);
 			RecordPointsItem.setCheckable(true);
 			RecordPointsItem.setChecked(RecordPoints);
-			if (RecordPoints)
-				menu.add(Menu.NONE, MenuItemIds.RecordIntervalSecsId.ordinal(),
-						Menu.NONE, getString(R.string.RecordIntervalSecs) + " ("
-								+ this.RecordIntervalSecs + ")");
-				
 		}
 		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE,
 				R.string.Exit);
@@ -533,44 +527,7 @@ public class RunningActivity extends Activity {
 			popUp.show();
 
 			break;
-		case RecordIntervalSecsId:
-			popUp = new Dialog(RunningActivity.this);
-			popUp.setContentView(R.layout.popupdialog);
-			popUp.setTitle("Input");
-			popUp.setCancelable(true);
-
-			et = (EditText) popUp.findViewById(R.id.Value);
-			et.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
-			et.setText("" + RecordIntervalSecs);
-
-			button = (Button) popUp.findViewById(R.id.CloseButton);
-			button.setOnClickListener(new OnClickListener() {
-
-				public void onClick(View v) {
-					popUp.dismiss();
-				}
-			});
-			button = (Button) popUp.findViewById(R.id.OkButton);
-			button.setOnClickListener(new OnClickListener() {
-
-				public void onClick(View v) {
-					View parent = (View) v.getParent();
-					String Info = ((TextView) parent.findViewById(R.id.Value))
-							.getText().toString();
-					try {
-						RecordIntervalSecs = Integer.parseInt(Info);
-					} catch (NumberFormatException e) {
-						Log.i("RunningActivity", "Warning secs NumberFormatException - "+e.getMessage());
-					}
-
-					popUp.dismiss();
-				}
-			});
-
-			popUp.show();
-			break;
 		}
-		
 
 		return super.onOptionsItemSelected(item);
 	}
@@ -595,7 +552,6 @@ public class RunningActivity extends Activity {
 
 	private float m_factor = 1;
 	private int WarningSecs = 5;
-	private int RecordIntervalSecs = 5;
 	private SharedPreferences mPrefs;
 
 	@Override
@@ -604,7 +560,6 @@ public class RunningActivity extends Activity {
 		SharedPreferences.Editor ed = mPrefs.edit();
 		ed.putFloat("SizeFactor", m_factor);
 		ed.putInt("WarningSecs", WarningSecs);
-		ed.putInt("RecordIntervalSecs", RecordIntervalSecs);
 		ed.putBoolean("RejectPassed", RejectPassed);
 		ed.putBoolean("RecordPoints", RecordPoints);
 

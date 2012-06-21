@@ -36,7 +36,7 @@ public class MyInfoActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		mPrefs = getPreferences(MODE_PRIVATE);
-		DebugMode = mPrefs.getBoolean("DebugMode", false);
+		DebugMode = mPrefs.getBoolean("DebugMode", false);	
 		if (PoiList.isEmpty())
 			Convert();
 	}
@@ -49,110 +49,89 @@ public class MyInfoActivity extends Activity {
 		intent.putExtra(FileDialog.CAN_SELECT_DIR, true);
 		intent.putExtra(FileDialog.SELECT_ONLY_DIR, true);
 
-		if (view.getId() == R.id.ExportButton)
+		if (view.getId()==R.id.ExportButton)
 			startActivityForResult(intent, REQUEST_EXPORT);
-		else if (view.getId() == R.id.SaveButton)
+		else if (view.getId()==R.id.SaveButton)
 			startActivityForResult(intent, REQUEST_SAVE);
-	}
-
-	public void onButtonTestSaveClick(View view) {
-		Intent intent = new Intent(getBaseContext(), SaveDialog.class);
-		startActivityForResult(intent, REQUEST_SELECT);
 	}
 
 	static final int REQUEST_EXPORT = 1;
 	static final int REQUEST_SAVE = 2;
-	static final int REQUEST_SELECT = 3;
 
 	public synchronized void onActivityResult(final int requestCode,
 			int resultCode, final Intent data) {
 
-		if (resultCode == Activity.RESULT_OK)
-			if (requestCode == REQUEST_SELECT) {
-				String[] list= data.getStringArrayExtra(SaveDialog.RESULT_SELECTED);
-				for(String s : list)
-					;
-			} else {
-				String Action = "";
-				if (requestCode == REQUEST_SAVE) {
-					Action = "Saving to: ";
-				} else if (requestCode == REQUEST_EXPORT) {
-					Action = "Exporting to: ";
-				}
+		if (resultCode == Activity.RESULT_OK) {			
+			String Action = "";
+			if (requestCode == REQUEST_SAVE) {
+				Action = "Saving to: ";
+			} else if (requestCode == REQUEST_EXPORT) {
+				Action = "Exporting to: ";
+			}			
 
+			String filePath = data.getStringExtra(FileDialog.RESULT_PATH);			
+			Toast.makeText(this, Action + filePath, Toast.LENGTH_SHORT).show();			
+			if (requestCode == REQUEST_EXPORT) {
 				File[] files = new File(getCacheDir(), "").listFiles();
+				for (File f : files) {
+					String filename = f.getName();
+					if (filename.endsWith(".sav")) {
+						String trackName = filename.substring(0,
+								filename.length() - 4);
+						try {
+							ArrayList<RunningActivity.Point> points = new ArrayList<RunningActivity.Point>();
+							ObjectInputStream is = new ObjectInputStream(
+									new GZIPInputStream(new FileInputStream(
+											getCacheDir() + "/" + filename)));
+							while (is.available() > 0) {
 
-				String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
-				Toast.makeText(this, Action + filePath, Toast.LENGTH_SHORT)
-						.show();
-				if (requestCode == REQUEST_EXPORT) {
-
-					for (File f : files) {
-						String filename = f.getName();
-						if (filename.endsWith(".sav")) {
-							String trackName = filename.substring(0,
-									filename.length() - 4);
-							try {
-								ArrayList<RunningActivity.Point> points = new ArrayList<RunningActivity.Point>();
-								ObjectInputStream is = new ObjectInputStream(
-										new GZIPInputStream(
-												new FileInputStream(
-														getCacheDir() + "/"
-																+ filename)));
-								while (is.available() > 0) {
-
-									points.add(new RunningActivity.Point(is
-											.readInt(), is.readInt(), is
-											.readFloat(), is.readFloat(), is
-											.readLong()));
-								}
-
-								File gpxFile = new File(filePath + "/"
-										+ trackName + ".gpx");
-								GPXFileWriter.writeGpxFile(trackName, points,
-										gpxFile);
-
-							} catch (Exception e) {
-								Log.i("MyInfoActivity",
-										"onActivityResult() export writeGpxFile "
-												+ e.getMessage());
+								points.add(new RunningActivity.Point(is
+										.readInt(), is.readInt(), is
+										.readFloat(), is.readFloat(), is
+										.readLong()));
 							}
+
+							File gpxFile = new File(filePath + "/" + trackName
+									+ ".gpx");
+							GPXFileWriter.writeGpxFile(trackName, points,
+									gpxFile);
+
+						} catch (Exception e) {
+							Log.i("MyInfoActivity", "onActivityResult() export writeGpxFile "+e.getMessage());
 						}
 					}
 				}
-				if (requestCode == REQUEST_SAVE) {
-					for (File f : files) {
-						String filename = f.getName();
-						if (filename.endsWith(".sav")) {
-							InputStream in = null;
-							OutputStream out = null;
-							try {
-								in = new FileInputStream(f);
-								out = new FileOutputStream(filePath + "/"
-										+ filename);
-								byte[] buffer = new byte[1024];
-								int read;
-								while ((read = in.read(buffer)) != -1) {
-									out.write(buffer, 0, read);
-								}
-
-								in.close();
-								in = null;
-								out.flush();
-								out.close();
-								out = null;
-							} catch (Exception e) {
-								Log.i("MyInfoActivity",
-										"onActivityResult() save writeGpxFile "
-												+ e.getMessage());
-							}
-						}
-					}
-				}
-				Toast.makeText(this, "Done", Toast.LENGTH_SHORT).show();
-
 			}
-		else if (resultCode == Activity.RESULT_CANCELED) {
+			if (requestCode == REQUEST_SAVE) {
+				File[] files = new File(getCacheDir(), "").listFiles();
+				for (File f : files) {
+					String filename = f.getName();
+					if (filename.endsWith(".sav")) {
+						InputStream in = null;
+				        OutputStream out = null;
+				        try {
+				          in = new FileInputStream(f);
+				          out = new FileOutputStream(filePath+"/" + filename);
+				          byte[] buffer = new byte[1024];
+				          int read;
+				          while((read = in.read(buffer)) != -1){
+				            out.write(buffer, 0, read);
+				          }
+
+				          in.close();
+				          in = null;
+				          out.flush();
+				          out.close();
+				          out = null;
+				        } catch(Exception e) {
+				        	Log.i("MyInfoActivity", "onActivityResult() save writeGpxFile "+e.getMessage());
+				        } 
+					}
+				}
+			}			
+			Toast.makeText(this, "Done", Toast.LENGTH_SHORT).show();
+
+		} else if (resultCode == Activity.RESULT_CANCELED) {
 
 		}
 
@@ -258,9 +237,7 @@ public class MyInfoActivity extends Activity {
 							}
 
 					} catch (Exception e) {
-						Log.i("MyInfoActivity",
-								"onButtonConvertClick() Convert "
-										+ e.getMessage());
+						Log.i("MyInfoActivity", "onButtonConvertClick() Convert "+e.getMessage());
 					}
 
 					tv.post(new Runnable() {
@@ -284,9 +261,9 @@ public class MyInfoActivity extends Activity {
 				Menu.NONE, R.string.Debugmode);
 		DebugModeItem.setCheckable(true);
 		DebugModeItem.setChecked(DebugMode);
-
+		
 		menu.add(Menu.NONE, AboutItemId, Menu.NONE, R.string.About);
-
+		
 		menu.add(Menu.NONE, ExitMenuItemId, Menu.NONE, R.string.Exit);
 		return true;
 	}
@@ -301,23 +278,17 @@ public class MyInfoActivity extends Activity {
 			item.setChecked(DebugMode);
 			break;
 		case AboutItemId:
-			AlertDialog.Builder alertbox = new AlertDialog.Builder(this);
+			AlertDialog.Builder alertbox = new AlertDialog.Builder(this);	
 			PackageInfo packageInfo = new PackageInfo();
-			try {
-				packageInfo = getPackageManager().getPackageInfo(
-						getPackageName(), 0);
-			} catch (Exception e) {
-			}
-			long BuildDate = packageInfo.lastUpdateTime;
-			Date d = new Date(BuildDate);
-			SimpleDateFormat sdf = new SimpleDateFormat(
-					"dd MMM yyyy HH:mm:ss Z z");
-			// sdf.setTimeZone(TimeZone.getDefault());
+			try{
+				packageInfo=getPackageManager().getPackageInfo(getPackageName(), 0);}catch (Exception e){}
+			long BuildDate=packageInfo.lastUpdateTime;
+			Date d=new Date(BuildDate);			
+			SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss Z z");	
+//			sdf.setTimeZone(TimeZone.getDefault());
 
-			alertbox.setMessage("Version: " + packageInfo.versionName + " ("
-					+ packageInfo.versionCode + ")\n\n" + "Build-Date: "
-					+ sdf.format(d));
-			alertbox.setNeutralButton("Ok", null);
+			alertbox.setMessage("Version: "+packageInfo.versionName+" ("+packageInfo.versionCode+")\n\n"+"Build-Date: "+sdf.format(d));
+			alertbox.setNeutralButton("Ok",null);
 			alertbox.show();
 			break;
 		case ExitMenuItemId:
