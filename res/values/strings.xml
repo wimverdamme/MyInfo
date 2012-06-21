@@ -43,7 +43,7 @@
     <string name="err">Error</string>
     <string name="RecordPoints">RecordPoints</string>
     <string name="Export">Export</string>
-    <string name="About">About...</string>
+    <string name="About">About&#8230;</string>
     
 
 </resources>
