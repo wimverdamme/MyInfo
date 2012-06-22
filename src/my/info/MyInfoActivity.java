@@ -12,11 +12,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
 import android.os.Bundle;
@@ -36,7 +39,7 @@ public class MyInfoActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		mPrefs = getPreferences(MODE_PRIVATE);
-		DebugMode = mPrefs.getBoolean("DebugMode", false);	
+		DebugMode = mPrefs.getBoolean("DebugMode", false);
 		if (PoiList.isEmpty())
 			Convert();
 	}
@@ -49,9 +52,9 @@ public class MyInfoActivity extends Activity {
 		intent.putExtra(FileDialog.CAN_SELECT_DIR, true);
 		intent.putExtra(FileDialog.SELECT_ONLY_DIR, true);
 
-		if (view.getId()==R.id.ExportButton)
+		if (view.getId() == R.id.ExportButton)
 			startActivityForResult(intent, REQUEST_EXPORT);
-		else if (view.getId()==R.id.SaveButton)
+		else if (view.getId() == R.id.SaveButton)
 			startActivityForResult(intent, REQUEST_SAVE);
 	}
 
@@ -61,16 +64,16 @@ public class MyInfoActivity extends Activity {
 	public synchronized void onActivityResult(final int requestCode,
 			int resultCode, final Intent data) {
 
-		if (resultCode == Activity.RESULT_OK) {			
+		if (resultCode == Activity.RESULT_OK) {
 			String Action = "";
 			if (requestCode == REQUEST_SAVE) {
 				Action = "Saving to: ";
 			} else if (requestCode == REQUEST_EXPORT) {
 				Action = "Exporting to: ";
-			}			
+			}
 
-			String filePath = data.getStringExtra(FileDialog.RESULT_PATH);			
-			Toast.makeText(this, Action + filePath, Toast.LENGTH_SHORT).show();			
+			String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
+			Toast.makeText(this, Action + filePath, Toast.LENGTH_SHORT).show();
 			if (requestCode == REQUEST_EXPORT) {
 				File[] files = new File(getCacheDir(), "").listFiles();
 				for (File f : files) {
@@ -97,7 +100,9 @@ public class MyInfoActivity extends Activity {
 									gpxFile);
 
 						} catch (Exception e) {
-							Log.i("MyInfoActivity", "onActivityResult() export writeGpxFile "+e.getMessage());
+							Log.i("MyInfoActivity",
+									"onActivityResult() export writeGpxFile "
+											+ e.getMessage());
 						}
 					}
 				}
@@ -106,29 +111,32 @@ public class MyInfoActivity extends Activity {
 				File[] files = new File(getCacheDir(), "").listFiles();
 				for (File f : files) {
 					String filename = f.getName();
-					if (filename.endsWith(".sav")||filename.endsWith(".log")) {
+					if (filename.endsWith(".sav") || filename.endsWith(".log")) {
 						InputStream in = null;
-				        OutputStream out = null;
-				        try {
-				          in = new FileInputStream(f);
-				          out = new FileOutputStream(filePath+"/" + filename);
-				          byte[] buffer = new byte[1024];
-				          int read;
-				          while((read = in.read(buffer)) != -1){
-				            out.write(buffer, 0, read);
-				          }
+						OutputStream out = null;
+						try {
+							in = new FileInputStream(f);
+							out = new FileOutputStream(filePath + "/"
+									+ filename);
+							byte[] buffer = new byte[1024];
+							int read;
+							while ((read = in.read(buffer)) != -1) {
+								out.write(buffer, 0, read);
+							}
 
-				          in.close();
-				          in = null;
-				          out.flush();
-				          out.close();
-				          out = null;
-				        } catch(Exception e) {
-				        	Log.i("MyInfoActivity", "onActivityResult() save writeGpxFile "+e.getMessage());
-				        } 
+							in.close();
+							in = null;
+							out.flush();
+							out.close();
+							out = null;
+						} catch (Exception e) {
+							Log.i("MyInfoActivity",
+									"onActivityResult() save writeGpxFile "
+											+ e.getMessage());
+						}
 					}
 				}
-			}			
+			}
 			Toast.makeText(this, "Done", Toast.LENGTH_SHORT).show();
 
 		} else if (resultCode == Activity.RESULT_CANCELED) {
@@ -237,7 +245,9 @@ public class MyInfoActivity extends Activity {
 							}
 
 					} catch (Exception e) {
-						Log.i("MyInfoActivity", "onButtonConvertClick() Convert "+e.getMessage());
+						Log.i("MyInfoActivity",
+								"onButtonConvertClick() Convert "
+										+ e.getMessage());
 					}
 
 					tv.post(new Runnable() {
@@ -261,9 +271,9 @@ public class MyInfoActivity extends Activity {
 				Menu.NONE, R.string.Debugmode);
 		DebugModeItem.setCheckable(true);
 		DebugModeItem.setChecked(DebugMode);
-		
+
 		menu.add(Menu.NONE, AboutItemId, Menu.NONE, R.string.About);
-		
+
 		menu.add(Menu.NONE, ExitMenuItemId, Menu.NONE, R.string.Exit);
 		return true;
 	}
@@ -278,17 +288,36 @@ public class MyInfoActivity extends Activity {
 			item.setChecked(DebugMode);
 			break;
 		case AboutItemId:
-			AlertDialog.Builder alertbox = new AlertDialog.Builder(this);	
+			AlertDialog.Builder alertbox = new AlertDialog.Builder(this);
 			PackageInfo packageInfo = new PackageInfo();
-			try{
-				packageInfo=getPackageManager().getPackageInfo(getPackageName(), 0);}catch (Exception e){}
-			long BuildDate=packageInfo.lastUpdateTime;
-			Date d=new Date(BuildDate);			
-			SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss Z z");	
-//			sdf.setTimeZone(TimeZone.getDefault());
+			try {
+				packageInfo = getPackageManager().getPackageInfo(
+						getPackageName(), 0);
+			} catch (Exception e) {
+			}
 
-			alertbox.setMessage("Version: "+packageInfo.versionName+" ("+packageInfo.versionCode+")\n\n"+"Build-Date: "+sdf.format(d));
-			alertbox.setNeutralButton("Ok",null);
+			long BuildDate = 0;
+			ApplicationInfo ai;
+			try {
+				ai = getPackageManager()
+						.getApplicationInfo(getPackageName(), 0);
+				ZipFile zf = new ZipFile(ai.sourceDir);
+				ZipEntry ze = zf.getEntry("classes.dex");
+
+				BuildDate = ze.getTime();
+			} catch (Exception e) {
+
+			}
+
+			Date d = new Date(BuildDate);
+			SimpleDateFormat sdf = new SimpleDateFormat(
+					"dd MMM yyyy HH:mm:ss Z z");
+			// sdf.setTimeZone(TimeZone.getDefault());
+
+			alertbox.setMessage("Version: " + packageInfo.versionName + " ("
+					+ packageInfo.versionCode + ")\n\n" + "Build-Date: "
+					+ sdf.format(d));
+			alertbox.setNeutralButton("Ok", null);
 			alertbox.show();
 			break;
 		case ExitMenuItemId:
