@@ -106,7 +106,7 @@ public class MyInfoActivity extends Activity {
 				File[] files = new File(getCacheDir(), "").listFiles();
 				for (File f : files) {
 					String filename = f.getName();
-					if (filename.endsWith(".sav")) {
+					if (filename.endsWith(".sav")||filename.endsWith(".log")) {
 						InputStream in = null;
 				        OutputStream out = null;
 				        try {

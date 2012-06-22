@@ -3,6 +3,8 @@ package my.info;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -579,7 +581,10 @@ public class RunningActivity extends Activity {
 	}
 
 	private void SaveRecordedPoints() {
-		if (locListener.RecordedPoints.size() > 0) {			
+		if (locListener.RecordedPoints.size() > 0) {	
+			Logging("Saving "+locListener.RecordedPoints.size()+" points. ");
+			
+			
 			Calendar c = GregorianCalendar.getInstance();
 			Date d = new Date(locListener.RecordedPoints.get(0).Time);
 			c.setTime(d);
@@ -596,7 +601,7 @@ public class RunningActivity extends Activity {
 						new FileOutputStream(file, true)));
 
 			} catch (Exception e) {
-				Log.i("RunningActivity", "SaveRecordedPoints() File"+e.getMessage());
+				Logging("RunningActivity SaveRecordedPoints() File"+e.getMessage());
 			}
 
 			c.add(Calendar.DATE, 1);
@@ -611,7 +616,7 @@ public class RunningActivity extends Activity {
 					try {
 						os.close();
 					} catch (Exception e) {
-						Log.i("RunningActivity", "SaveRecordedPoints() close"+e.getMessage());
+						Logging("RunningActivity SaveRecordedPoints() close"+e.getMessage());
 					}
 					try {
 						File file = new File(getCacheDir(), GetFilename(
@@ -624,7 +629,7 @@ public class RunningActivity extends Activity {
 								new FileOutputStream(file, true)));
 
 					} catch (Exception e) {
-						Log.i("RunningActivity", "SaveRecordedPoints() file 3 "+e.getMessage());
+						Logging("RunningActivity SaveRecordedPoints() file 3 "+e.getMessage());
 					}
 				}
 				try {
@@ -634,15 +639,25 @@ public class RunningActivity extends Activity {
 					os.writeFloat(point.Altitude);
 					os.writeLong(point.Time);
 				} catch (Exception e) {
-					Log.i("RunningActivity", "SaveRecordedPoints() write"+e.getMessage());
+					Logging("RunningActivity SaveRecordedPoints() write"+e.getMessage());
 				}
 			}
 			try {
 				os.close();
 			} catch (Exception e) {
-				Log.i("RunningActivity", "SaveRecordedPoints() close 2"+e.getMessage());
+				Logging("RunningActivity SaveRecordedPoints() close 2"+e.getMessage());
 			}
-			locListener.RecordedPoints.clear();			
+			locListener.RecordedPoints.clear();
+			Logging("Done ");
 		}
+	}
+
+	private void Logging(String s) {
+		try{
+			File logfile = new File(getCacheDir(),"MyInfo.log");
+			PrintWriter pw=new PrintWriter(new FileOutputStream(logfile, true));
+			pw.println((new Date())+": "+s);
+			pw.close();
+			}catch (Exception e){}
 	}
 }
