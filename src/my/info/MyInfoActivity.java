@@ -194,6 +194,8 @@ public class MyInfoActivity extends Activity {
 			new Thread(new Runnable() {
 				public void run() {
 					String list[] = {};
+					
+					ArrayList<Poi> PoiList = new ArrayList<Poi>();
 
 					String path = "";
 					AssetManager mgr = getAssets();
@@ -256,12 +258,12 @@ public class MyInfoActivity extends Activity {
 								"onButtonConvertClick() Convert "
 										+ e.getMessage());
 					}
-
+					MyInfoActivity.PoiList = new  CopyOnWriteArrayList<Poi>(PoiList);
 					tv.post(new Runnable() {
 						public void run() {
 							tv.setText("");
 						}
-					});
+					});					
 					Converting = false;
 				}
 			}).start();
