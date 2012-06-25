@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.zip.GZIPOutputStream;
 
 import android.app.Activity;
@@ -50,7 +52,7 @@ public class RunningActivity extends Activity {
 	private LocationManager locManager;
 	private MyLocationListener locListener = new MyLocationListener(this);	
 	private boolean isPlugged = false;
-	private ArrayList<Poi> PoiList = MyInfoActivity.PoiList;
+	private CopyOnWriteArrayList<Poi> PoiList = MyInfoActivity.PoiList;
 	private ArrowDirectionView Arrow;
 	private Sound sound;
 
@@ -322,6 +324,7 @@ public class RunningActivity extends Activity {
 					lastStoredPoint = location.getTime();
 				}
 
+		
 				if (RecordedPoints.size() == 1000)
 				{
 					locManager.removeUpdates(locListener);
@@ -575,7 +578,7 @@ public class RunningActivity extends Activity {
 	public String GetFilename(int year, int month, int day) {
 		DecimalFormat df = new DecimalFormat("00");
 		String filename = "" + df.format(year) + df.format(month)
-				+ df.format(day) + ".sav";
+				+ df.format(day) ;
 		return filename;
 	}
 
@@ -588,11 +591,19 @@ public class RunningActivity extends Activity {
 			Date d = new Date(locListener.RecordedPoints.get(0).Time);
 			c.setTime(d);
 
+			int counter=1;
 			ObjectOutputStream os = null;
 			try {
 				File file = new File(getCacheDir(), GetFilename(
 						c.get(Calendar.YEAR), c.get(Calendar.MONTH),
-						c.get(Calendar.DATE)));
+						c.get(Calendar.DATE))+ "_"+(new DecimalFormat("000")).format(counter)+".sav");
+				while (file.exists())
+				{
+					counter++;
+					file = new File(getCacheDir(), GetFilename(
+							c.get(Calendar.YEAR), c.get(Calendar.MONTH),
+							c.get(Calendar.DATE))+ "_"+(new DecimalFormat("000")).format(counter)+".sav");
+				}
 				if (!file.exists())
 					file.createNewFile();
 
@@ -610,7 +621,9 @@ public class RunningActivity extends Activity {
 
 			long nextDay = c.getTimeInMillis();
 
-			for (Point point : locListener.RecordedPoints) {
+			for (Iterator<Point> pointIt = locListener.RecordedPoints.iterator(); pointIt.hasNext();)
+			{
+				Point point = (Point) pointIt.next();
 				if (point.Time > nextDay) {
 					try {
 						os.close();
@@ -618,9 +631,17 @@ public class RunningActivity extends Activity {
 						Logging("RunningActivity SaveRecordedPoints() close"+e.getMessage());
 					}
 					try {
+						counter=1;
 						File file = new File(getCacheDir(), GetFilename(
 								c.get(Calendar.YEAR), c.get(Calendar.MONTH),
-								c.get(Calendar.DATE)));
+								c.get(Calendar.DATE))+ "_"+(new DecimalFormat("000")).format(counter)+".sav");
+						while (file.exists())
+						{
+							counter++;
+							file = new File(getCacheDir(), GetFilename(
+									c.get(Calendar.YEAR), c.get(Calendar.MONTH),
+									c.get(Calendar.DATE))+ "_"+(new DecimalFormat("000")).format(counter)+".sav");
+						}
 						if (!file.exists())
 							file.createNewFile();
 

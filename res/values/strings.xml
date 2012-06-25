@@ -44,6 +44,7 @@
     <string name="RecordPoints">RecordPoints</string>
     <string name="Export">Export</string>
     <string name="About">About&#8230;</string>
+    <string name="HistoryDays">History Days</string>
     
 
 </resources>
