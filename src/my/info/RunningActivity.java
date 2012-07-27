@@ -155,9 +155,7 @@ public class RunningActivity extends Activity {
 	}
 
 	public void Visibility(int visible) {
-
-		visible= View.VISIBLE;
-		
+	
 		findViewById(R.id.ChargerConnected).setVisibility(visible);
 		findViewById(R.id.ChargerConnectedValue).setVisibility(visible);
 		findViewById(R.id.Distance).setVisibility(visible);
