@@ -100,6 +100,7 @@ public class MyInfoActivity extends Activity {
 										.readFloat(), is.readFloat(), is
 										.readLong()));
 							}
+							is.close();
 
 							File gpxFile = new File(filePath + "/" + trackName
 									+ ".gpx");
