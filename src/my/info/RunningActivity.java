@@ -177,11 +177,10 @@ public class RunningActivity extends Activity {
 			ChangeTextToHidden();
 
 	}
-
+	
 	private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context arg0, Intent intent) {
-
 			int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
 			isPlugged = (plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB);
 			((TextView) findViewById(R.id.ChargerConnectedValue))
@@ -254,8 +253,7 @@ public class RunningActivity extends Activity {
 		Poi lastBeepPoi = null;
 		long lastStoredPoint = 0;
 
-		public ArrayList<Point> RecordedPoints = new ArrayList<Point>(1000);
-
+		public ArrayList<Point> RecordedPoints = new ArrayList<Point>(1000);		
 		public void onLocationChanged(Location location) {
 			if (location != null
 					&& (location.getLatitude() != 0 || location.getLongitude() != 0)) {
