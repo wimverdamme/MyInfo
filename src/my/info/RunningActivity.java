@@ -166,6 +166,7 @@ public class RunningActivity extends Activity {
 		findViewById(R.id.DirectionNumericValue).setVisibility(visible);
 		findViewById(R.id.Separation1).setVisibility(visible);
 		findViewById(R.id.Separation2).setVisibility(visible);
+		findViewById(R.id.Separation3).setVisibility(visible);
 		findViewById(R.id.Speed).setVisibility(visible);
 		findViewById(R.id.SpeedValue).setVisibility(visible);
 		findViewById(R.id.Type).setVisibility(visible);
@@ -240,7 +241,34 @@ public class RunningActivity extends Activity {
 			this.Time = Time;
 		}
 	}
+	public class SynchronizedCounter {
+	    private int c = 0;
 
+	    public synchronized void increment() {
+	        c++;
+	    }
+
+	    public synchronized void decrement() {
+	        c--;
+	    }
+
+	    public synchronized int value() {
+	        return c;
+	    }
+	}
+	static boolean HandlingLocationUpdate=false;
+	public synchronized boolean GetLock() {
+        if (HandlingLocationUpdate)
+        	return false;
+        else
+        {
+        	HandlingLocationUpdate=true;
+        	return true;
+        }
+    }
+	public synchronized void ReleaseLock() {
+		HandlingLocationUpdate=false;
+    }
 	class MyLocationListener implements LocationListener {
 		Context parent;
 
@@ -255,6 +283,8 @@ public class RunningActivity extends Activity {
 
 		public ArrayList<Point> RecordedPoints = new ArrayList<Point>(1000);		
 		public void onLocationChanged(Location location) {
+			if (!GetLock())
+				return;
 			if (location != null
 					&& (location.getLatitude() != 0 || location.getLongitude() != 0)) {
 
@@ -285,7 +315,7 @@ public class RunningActivity extends Activity {
 						location.getLongitude(), p.getLatitudeE6()
 								/ (double) 1E6, p.getLongitudeE6()
 								/ (double) 1E6, results);
-				((TextView) findViewById(R.id.DistanceValue)).setText(df
+				((TextView) findViewById(R.id.DistanceValue)).setText((new DecimalFormat("#,###"))
 						.format(results[0]));
 				((TextView) findViewById(R.id.DirectionNumericValue))
 						.setText(df.format(results[2]));
@@ -332,7 +362,7 @@ public class RunningActivity extends Activity {
 				}
 
 			}
-
+			ReleaseLock();
 		}
 
 		public Poi findClosedPoi(double Latitude, double Longitude,

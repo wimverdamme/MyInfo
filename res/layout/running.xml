@@ -181,26 +181,6 @@
         android:layout_height="wrap_content" >
 
         <TextView
-            android:id="@+id/Distance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_column="1"
-            android:padding="3dip"
-            android:text="@string/Distance" />
-
-        <TextView
-            android:id="@+id/DistanceValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:padding="3dip" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
-
-        <TextView
             android:id="@+id/DirectionNumeric"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -270,6 +250,31 @@
 
         <TextView
             android:id="@+id/SpeedValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:padding="3dip" />
+    </TableRow>
+    <View
+        android:id="@+id/Separation3"
+        android:layout_width="wrap_content"
+        android:layout_height="2dip"
+        android:background="#FF909090" />
+
+    <TableRow
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/Distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:padding="3dip"
+            android:text="@string/Distance" />
+
+        <TextView
+            android:id="@+id/DistanceValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="right"
