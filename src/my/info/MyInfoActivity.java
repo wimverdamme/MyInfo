@@ -25,6 +25,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,7 +53,8 @@ public class MyInfoActivity extends Activity {
 
 	public void onButtonExportSaveClick(View view) {
 		Intent intent = new Intent(getBaseContext(), FileDialog.class);
-		intent.putExtra(FileDialog.START_PATH, "/sdcard");
+		String PathToSd=Environment.getExternalStorageDirectory().getPath();
+		intent.putExtra(FileDialog.START_PATH, PathToSd);
 
 		// can user select directories or not
 		intent.putExtra(FileDialog.CAN_SELECT_DIR, true);
