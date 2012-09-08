@@ -186,6 +186,7 @@ public class RunningActivity extends Activity {
 					.setText(getResources().getText(
 							isPlugged ? R.string.Plugged : R.string.Unplugged)
 							+ " " + plugged);
+			plugged=1;
 			if (extended && plugged == 0) {
 				extended = false;
 				ChangeTextToHidden();
