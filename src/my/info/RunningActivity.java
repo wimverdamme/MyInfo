@@ -3,12 +3,15 @@ package my.info;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.zip.GZIPOutputStream;
 
 import android.app.Activity;
@@ -26,6 +29,7 @@ import android.location.LocationManager;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,6 +41,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class RunningActivity extends Activity {
 
@@ -44,29 +49,27 @@ public class RunningActivity extends Activity {
 
 	private boolean extended = false;
 	private boolean gps_enabled = false;
-	private LocationManager locManager, dummylocmanager;
-	private MyLocationListener locListener = new MyLocationListener(this);
-	private LocationListener dummyloclistener = new MyDummyLocationListener();
+	private LocationManager locManager;
+	private MyLocationListener locListener = new MyLocationListener(this);	
 	private boolean isPlugged = false;
-	private ArrayList<Poi> PoiList = MyInfoActivity.PoiList;
+	private CopyOnWriteArrayList<Poi> PoiList = MyInfoActivity.PoiList;
 	private ArrowDirectionView Arrow;
 	private Sound sound;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
+		super.onCreate(savedInstanceState);		
+		
 		setContentView(R.layout.running);
 		extended = getIntent().getExtras().getBoolean("Extended");
 
 		locManager = (LocationManager) this
-				.getSystemService(Context.LOCATION_SERVICE);
-		dummylocmanager = (LocationManager) this
-				.getSystemService(Context.LOCATION_SERVICE);
+				.getSystemService(Context.LOCATION_SERVICE);		
 		try {
 			gps_enabled = locManager
 					.isProviderEnabled(LocationManager.GPS_PROVIDER);
 		} catch (Exception ex) {
+			Log.i("RunningActivity", "onCreate() gps disabled - "+ex.getMessage());
 		}
 
 		if (!gps_enabled) {
@@ -74,7 +77,7 @@ public class RunningActivity extends Activity {
 			AlertDialog.Builder alertbox = new AlertDialog.Builder(this);
 
 			// set the message to display
-			alertbox.setMessage("Enable Gps?");
+			alertbox.setMessage("Gps need to be enabled. Enable Gps?");
 
 			// add a neutral button to the alert box and assign a click listener
 			alertbox.setNeutralButton("Ok",
@@ -103,7 +106,6 @@ public class RunningActivity extends Activity {
 							// "canel button clicked",
 							// Toast.LENGTH_LONG).show();
 							locManager.removeUpdates(locListener);
-							dummylocmanager.removeUpdates(dummyloclistener);
 							finish();
 						}
 					});
@@ -116,11 +118,7 @@ public class RunningActivity extends Activity {
 
 		if (gps_enabled) {
 			locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
-					0, locListener);
-			dummylocmanager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, 3600000, 100000,
-					dummyloclistener);
-
+					0, locListener);			
 		}
 
 		this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(
@@ -135,7 +133,6 @@ public class RunningActivity extends Activity {
 		m_factor = mPrefs.getFloat("SizeFactor", 1);
 		changeSize((ViewGroup) findViewById(R.id.Running), m_factor);
 
-		ContinuousMode = mPrefs.getBoolean("ContinuousMode", true);
 		RejectPassed = mPrefs.getBoolean("RejectPassed", true);
 		RecordPoints = mPrefs.getBoolean("RecordPoints", false);
 		WarningSecs = mPrefs.getInt("WarningSecs", 15);
@@ -159,6 +156,8 @@ public class RunningActivity extends Activity {
 
 	public void Visibility(int visible) {
 
+		visible= View.VISIBLE;
+		
 		findViewById(R.id.ChargerConnected).setVisibility(visible);
 		findViewById(R.id.ChargerConnectedValue).setVisibility(visible);
 		findViewById(R.id.Distance).setVisibility(visible);
@@ -167,19 +166,22 @@ public class RunningActivity extends Activity {
 		findViewById(R.id.DirectionNumericValue).setVisibility(visible);
 		findViewById(R.id.Separation1).setVisibility(visible);
 		findViewById(R.id.Separation2).setVisibility(visible);
+		findViewById(R.id.Separation3).setVisibility(visible);
 		findViewById(R.id.Speed).setVisibility(visible);
 		findViewById(R.id.SpeedValue).setVisibility(visible);
 		findViewById(R.id.Type).setVisibility(visible);
 		findViewById(R.id.TypeValue).setVisibility(visible);
 		findViewById(R.id.DirectionArrow).setVisibility(visible);
 		Arrow.setVisibility(visible);
+		
+		if (visible!=View.VISIBLE)
+			ChangeTextToHidden();
 
 	}
-
+	
 	private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context arg0, Intent intent) {
-
 			int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
 			isPlugged = (plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB);
 			((TextView) findViewById(R.id.ChargerConnectedValue))
@@ -189,7 +191,6 @@ public class RunningActivity extends Activity {
 			plugged=1;
 			if (extended && plugged == 0) {
 				extended = false;
-				ChangeTextToHidden();
 			}
 			int visible = (extended && plugged != 0) ? View.VISIBLE
 					: View.INVISIBLE;
@@ -241,7 +242,34 @@ public class RunningActivity extends Activity {
 			this.Time = Time;
 		}
 	}
+	public class SynchronizedCounter {
+	    private int c = 0;
 
+	    public synchronized void increment() {
+	        c++;
+	    }
+
+	    public synchronized void decrement() {
+	        c--;
+	    }
+
+	    public synchronized int value() {
+	        return c;
+	    }
+	}
+	static boolean HandlingLocationUpdate=false;
+	public synchronized boolean GetLock() {
+        if (HandlingLocationUpdate)
+        	return false;
+        else
+        {
+        	HandlingLocationUpdate=true;
+        	return true;
+        }
+    }
+	public synchronized void ReleaseLock() {
+		HandlingLocationUpdate=false;
+    }
 	class MyLocationListener implements LocationListener {
 		Context parent;
 
@@ -252,15 +280,15 @@ public class RunningActivity extends Activity {
 
 		long lastBeep = 0;
 		Poi lastBeepPoi = null;
+		long lastStoredPoint = 0;
 
-		public ArrayList<Point> RecordedPoints = new ArrayList<Point>(1000);
-
+		public ArrayList<Point> RecordedPoints = new ArrayList<Point>(1000);		
 		public void onLocationChanged(Location location) {
+			if (!GetLock())
+				return;
 			if (location != null
 					&& (location.getLatitude() != 0 || location.getLongitude() != 0)) {
-				// This needs to stop getting the location data and save the
-				// battery power.
-				locManager.removeUpdates(locListener);
+
 				DecimalFormat df = new DecimalFormat("#.0000");
 				((TextView) findViewById(R.id.LongitudeValue)).setText(df
 						.format(location.getLongitude()));
@@ -288,7 +316,7 @@ public class RunningActivity extends Activity {
 						location.getLongitude(), p.getLatitudeE6()
 								/ (double) 1E6, p.getLongitudeE6()
 								/ (double) 1E6, results);
-				((TextView) findViewById(R.id.DistanceValue)).setText(df
+				((TextView) findViewById(R.id.DistanceValue)).setText((new DecimalFormat("#,###"))
 						.format(results[0]));
 				((TextView) findViewById(R.id.DirectionNumericValue))
 						.setText(df.format(results[2]));
@@ -315,22 +343,27 @@ public class RunningActivity extends Activity {
 
 				}
 
-				if (RecordPoints)
-					this.RecordedPoints.add(new Point(location.getLatitude(),
-						location.getLongitude(), location.getSpeed(),
-						(float) location.getAltitude(), location.getTime()));
+				if (RecordPoints
+						&& (lastStoredPoint + 1000 <= location.getTime())) {
+					this.RecordedPoints
+							.add(new Point(location.getLatitude(), location
+									.getLongitude(), location.getSpeed(),
+									(float) location.getAltitude(), location
+											.getTime()));
+					lastStoredPoint = location.getTime();
+				}
 
+		
 				if (RecordedPoints.size() == 1000)
+				{
+					locManager.removeUpdates(locListener);
 					SaveRecordedPoints();
-
-				if (gps_enabled) {
 					locManager.requestLocationUpdates(
-							LocationManager.GPS_PROVIDER, ContinuousMode ? 0
-									: 1000,
-							ContinuousMode ? 0 : results[0] / 3, locListener);
+								LocationManager.GPS_PROVIDER, 0, 0 , locListener);
 				}
 
 			}
+			ReleaseLock();
 		}
 
 		public Poi findClosedPoi(double Latitude, double Longitude,
@@ -392,18 +425,13 @@ public class RunningActivity extends Activity {
 	}
 
 	public enum MenuItemIds {
-		ContinuousModeMenuItemId, RejectPassedItemId, ResizeTextItemId, WarningSecsItemId,RecordPointsItemId, ExitMenuItemId
+		RejectPassedItemId, ResizeTextItemId, WarningSecsItemId, RecordPointsItemId, ExitMenuItemId
 	}
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		menu.clear();
 		if (extended) {
-			MenuItem ContinuousModeItem = menu.add(Menu.NONE,
-					MenuItemIds.ContinuousModeMenuItemId.ordinal(), Menu.NONE,
-					R.string.Continuousmode);
-			ContinuousModeItem.setCheckable(true);
-			ContinuousModeItem.setChecked(ContinuousMode);
 
 			MenuItem RejectPassedItem = menu.add(Menu.NONE,
 					MenuItemIds.RejectPassedItemId.ordinal(), Menu.NONE,
@@ -416,7 +444,7 @@ public class RunningActivity extends Activity {
 			menu.add(Menu.NONE, MenuItemIds.WarningSecsItemId.ordinal(),
 					Menu.NONE, getString(R.string.WarningSecs) + " ("
 							+ this.WarningSecs + ")");
-			
+
 			MenuItem RecordPointsItem = menu.add(Menu.NONE,
 					MenuItemIds.RecordPointsItemId.ordinal(), Menu.NONE,
 					R.string.RecordPoints);
@@ -429,7 +457,6 @@ public class RunningActivity extends Activity {
 		return true;
 	}
 
-	private static boolean ContinuousMode = false;
 	private static boolean RejectPassed = false;
 	private static boolean RecordPoints = false;
 
@@ -439,10 +466,6 @@ public class RunningActivity extends Activity {
 		EditText et;
 		oldfactor = m_factor;
 		switch (MenuItemIds.values()[item.getItemId()]) {
-		case ContinuousModeMenuItemId:
-			ContinuousMode = !item.isChecked();
-			item.setChecked(ContinuousMode);
-			break;
 		case RejectPassedItemId:
 			RejectPassed = !item.isChecked();
 			item.setChecked(RejectPassed);
@@ -452,8 +475,9 @@ public class RunningActivity extends Activity {
 			item.setChecked(RecordPoints);
 			break;
 		case ExitMenuItemId:
-			locManager.removeUpdates(locListener);
-			dummylocmanager.removeUpdates(dummyloclistener);
+			locManager.removeUpdates(locListener);			
+			SaveRecordedPoints();
+			Toast.makeText(this, "Stopped", Toast.LENGTH_SHORT).show();
 			finish();
 			break;
 		case ResizeTextItemId:
@@ -484,6 +508,7 @@ public class RunningActivity extends Activity {
 					try {
 						m_factor = Float.parseFloat(Info);
 					} catch (NumberFormatException e) {
+						Log.i("RunningActivity", "resize NumberFormatException "+ e.getMessage());
 					}
 
 					popUp.dismiss();
@@ -525,6 +550,7 @@ public class RunningActivity extends Activity {
 					try {
 						WarningSecs = Integer.parseInt(Info);
 					} catch (NumberFormatException e) {
+						Log.i("RunningActivity", "Warning secs NumberFormatException - "+e.getMessage());
 					}
 
 					popUp.dismiss();
@@ -566,40 +592,55 @@ public class RunningActivity extends Activity {
 		super.onPause();
 		SharedPreferences.Editor ed = mPrefs.edit();
 		ed.putFloat("SizeFactor", m_factor);
-		ed.putBoolean("ContinuousMode", ContinuousMode);
 		ed.putInt("WarningSecs", WarningSecs);
 		ed.putBoolean("RejectPassed", RejectPassed);
 		ed.putBoolean("RecordPoints", RecordPoints);
-		
+
 		ed.commit();
+		locManager.removeUpdates(locListener);
 		SaveRecordedPoints();
+		locManager.requestLocationUpdates(
+					LocationManager.GPS_PROVIDER, 0, 0 , locListener);		
+		Toast.makeText(this, "Stopped", Toast.LENGTH_SHORT).show();
 	}
 
-	public String GetFilename(int year,int month,int day)
-	{
+	public String GetFilename(int year, int month, int day) {
 		DecimalFormat df = new DecimalFormat("00");
-		String filename = "" + df.format(year)
-				+ df.format(month)
-				+ df.format(day)
-				+ ".sav";
+		String filename = "" + df.format(year) + df.format(month)
+				+ df.format(day) ;
 		return filename;
 	}
+
 	private void SaveRecordedPoints() {
-		if (locListener.RecordedPoints.size() > 0) {
+		if (locListener.RecordedPoints.size() > 0) {	
+			Logging("Saving "+locListener.RecordedPoints.size()+" points. ");
+			
+			
 			Calendar c = GregorianCalendar.getInstance();
 			Date d = new Date(locListener.RecordedPoints.get(0).Time);
 			c.setTime(d);
 
+			int counter=1;
 			ObjectOutputStream os = null;
 			try {
-				File file = new File(getCacheDir(), GetFilename(c.get(Calendar.YEAR),c.get(Calendar.MONTH),c.get(Calendar.DATE)));
+				File file = new File(getCacheDir(), GetFilename(
+						c.get(Calendar.YEAR), c.get(Calendar.MONTH),
+						c.get(Calendar.DATE))+ "_"+(new DecimalFormat("000")).format(counter)+".sav");
+				while (file.exists())
+				{
+					counter++;
+					file = new File(getCacheDir(), GetFilename(
+							c.get(Calendar.YEAR), c.get(Calendar.MONTH),
+							c.get(Calendar.DATE))+ "_"+(new DecimalFormat("000")).format(counter)+".sav");
+				}
 				if (!file.exists())
 					file.createNewFile();
 
-				os = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(file, true)));				
+				os = new ObjectOutputStream(new GZIPOutputStream(
+						new FileOutputStream(file, true)));
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				Logging("RunningActivity SaveRecordedPoints() File"+e.getMessage());
 			}
 
 			c.add(Calendar.DATE, 1);
@@ -609,21 +650,35 @@ public class RunningActivity extends Activity {
 
 			long nextDay = c.getTimeInMillis();
 
-			for (Point point : locListener.RecordedPoints) {
+			for (Iterator<Point> pointIt = locListener.RecordedPoints.iterator(); pointIt.hasNext();)
+			{
+				Point point = (Point) pointIt.next();
 				if (point.Time > nextDay) {
 					try {
 						os.close();
 					} catch (Exception e) {
+						Logging("RunningActivity SaveRecordedPoints() close"+e.getMessage());
 					}
 					try {
-						File file = new File(getCacheDir(), GetFilename(c.get(Calendar.YEAR),c.get(Calendar.MONTH),c.get(Calendar.DATE)));
+						counter=1;
+						File file = new File(getCacheDir(), GetFilename(
+								c.get(Calendar.YEAR), c.get(Calendar.MONTH),
+								c.get(Calendar.DATE))+ "_"+(new DecimalFormat("000")).format(counter)+".sav");
+						while (file.exists())
+						{
+							counter++;
+							file = new File(getCacheDir(), GetFilename(
+									c.get(Calendar.YEAR), c.get(Calendar.MONTH),
+									c.get(Calendar.DATE))+ "_"+(new DecimalFormat("000")).format(counter)+".sav");
+						}
 						if (!file.exists())
 							file.createNewFile();
 
-						os = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(file, true)));	
+						os = new ObjectOutputStream(new GZIPOutputStream(
+								new FileOutputStream(file, true)));
 
 					} catch (Exception e) {
-						e.printStackTrace();
+						Logging("RunningActivity SaveRecordedPoints() file 3 "+e.getMessage());
 					}
 				}
 				try {
@@ -633,15 +688,25 @@ public class RunningActivity extends Activity {
 					os.writeFloat(point.Altitude);
 					os.writeLong(point.Time);
 				} catch (Exception e) {
+					Logging("RunningActivity SaveRecordedPoints() write"+e.getMessage());
 				}
 			}
 			try {
 				os.close();
 			} catch (Exception e) {
+				Logging("RunningActivity SaveRecordedPoints() close 2"+e.getMessage());
 			}
 			locListener.RecordedPoints.clear();
-
+			Logging("Done ");
 		}
+	}
 
+	private void Logging(String s) {
+		try{
+			File logfile = new File(getCacheDir(),"MyInfo.log");
+			PrintWriter pw=new PrintWriter(new FileOutputStream(logfile, true));
+			pw.println((new Date())+": "+s);
+			pw.close();
+			}catch (Exception e){}
 	}
 }

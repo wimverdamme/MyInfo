@@ -25,8 +25,7 @@
     <string name="Speed">Speed</string>
     <string name="Debugmode">Debugmode</string>
     <string name="UseDatabase">Use Database</string>
-    <string name="Exit">Exit</string>
-    <string name="Continuousmode">Continuousmode</string>
+    <string name="Exit">Exit</string>    
     <string name="Resize">Resize</string>
     <string name="TestSound">TestSound</string>
     <string name="WarningSecs">WarningSecs</string>
@@ -43,6 +42,9 @@
     <color name="gray">#ffff0000</color>
     <string name="err">Error</string>
     <string name="RecordPoints">RecordPoints</string>
+    <string name="Export">Export</string>
+    <string name="About">About&#8230;</string>
+    <string name="HistoryDays">History Days</string>
     
 
 </resources>
