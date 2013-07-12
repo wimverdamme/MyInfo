@@ -19,11 +19,14 @@ import java.util.zip.ZipFile;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -47,6 +50,7 @@ public class MyInfoActivity extends Activity {
 		mPrefs = getPreferences(MODE_PRIVATE);
 		DebugMode = mPrefs.getBoolean("DebugMode", false);
 		DaysBack = mPrefs.getInt("DaysBack", 0);
+		mContext=this;
 		if (PoiList.isEmpty())
 			Convert();
 	}
@@ -66,6 +70,7 @@ public class MyInfoActivity extends Activity {
 			startActivityForResult(intent, REQUEST_SAVE);
 	}
 
+	static Context mContext;
 	static final int REQUEST_EXPORT = 1;
 	static final int REQUEST_SAVE = 2;
 	Dialog popUp;
@@ -180,8 +185,48 @@ public class MyInfoActivity extends Activity {
 		startActivity(intent);
 	}
 
+	public static CopyOnWriteArrayList<Poi> ClosePoiList = new CopyOnWriteArrayList<Poi>();
 	public static CopyOnWriteArrayList<Poi> PoiList = new CopyOnWriteArrayList<Poi>();
 	public static boolean Converting = false;
+	
+	public static Location LastRecalculationLocation;
+	public static void ReCalulateClosePois()
+	{
+//		String locationProvider = LocationManager.NETWORK_PROVIDER;
+		String locationProvider = LocationManager.GPS_PROVIDER;		
+		LocationManager locationManager =  (LocationManager)mContext.getSystemService(Context.LOCATION_SERVICE);
+		// Or use LocationManager.GPS_PROVIDER		
+
+		Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+		ArrayList<Poi> tempClosePoiList = new ArrayList<Poi>();
+		for  (Poi p : PoiList) {		
+			float[] results = new float[3];
+			Location.distanceBetween(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(),
+					p.getLatitudeE6() / (double) 1E6,
+					p.getLongitudeE6() / (double) 1E6, results);
+			if (results[0]<100000) //100km
+				tempClosePoiList.add(p);
+			
+		}
+		LastRecalculationLocation=lastKnownLocation;
+		ClosePoiList = new CopyOnWriteArrayList<Poi>(tempClosePoiList);
+	}
+	
+	public static boolean Recalculating = false;
+	
+	public static void Recalculate() {
+		if (!Recalculating) {
+			Recalculating = true;
+
+			new Thread(new Runnable() {
+				public void run() {
+					ReCalulateClosePois();			
+					Recalculating = false;
+				}
+			}).start();
+		}
+	}
+	
 
 	public void onButtonConvertClick(View view) {
 
@@ -262,6 +307,7 @@ public class MyInfoActivity extends Activity {
 										+ e.getMessage());
 					}
 					MyInfoActivity.PoiList = new  CopyOnWriteArrayList<Poi>(PoiList);
+					ReCalulateClosePois();
 					tv.post(new Runnable() {
 						public void run() {
 							tv.setText("");
