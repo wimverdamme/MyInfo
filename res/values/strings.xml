@@ -30,7 +30,7 @@
     <string name="TestSound">TestSound</string>
     <string name="WarningSecs">WarningSecs</string>
     <string name="RejectPassed">Reject Passed</string>
-    <string name="Unknown">Unkown</string>
+    <string name="Unknown">Unknown</string>
     <string name="location">Location</string>
     <string name="cant_read_folder">folder can\'t be read!</string>
     <string name="nnew">New</string>
@@ -45,6 +45,7 @@
     <string name="Export">Export</string>
     <string name="About">About&#8230;</string>
     <string name="HistoryDays">History Days</string>
+    <string name="ResizeDistance">ResizeDistance</string>
     
 
 </resources>

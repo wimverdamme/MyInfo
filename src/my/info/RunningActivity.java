@@ -425,7 +425,7 @@ public class RunningActivity extends Activity {
 	}
 
 	public enum MenuItemIds {
-		RejectPassedItemId, ResizeTextItemId, WarningSecsItemId, RecordPointsItemId, ExitMenuItemId
+		RejectPassedItemId, ResizeTextItemId, ResizedistanceId, WarningSecsItemId, RecordPointsItemId, ExitMenuItemId
 	}
 
 	@Override
@@ -441,6 +441,9 @@ public class RunningActivity extends Activity {
 
 			menu.add(Menu.NONE, MenuItemIds.ResizeTextItemId.ordinal(),
 					Menu.NONE, R.string.Resize);
+			menu.add(Menu.NONE, MenuItemIds.ResizedistanceId.ordinal(),
+					Menu.NONE, R.string.ResizeDistance);
+			
 			menu.add(Menu.NONE, MenuItemIds.WarningSecsItemId.ordinal(),
 					Menu.NONE, getString(R.string.WarningSecs) + " ("
 							+ this.WarningSecs + ")");
@@ -516,6 +519,47 @@ public class RunningActivity extends Activity {
 					changeSize((ViewGroup) findViewById(R.id.Running),
 							newfactor);
 
+				}
+			});
+
+			popUp.show();
+			break;
+		case ResizedistanceId:
+			popUp = new Dialog(RunningActivity.this);
+			popUp.setContentView(R.layout.popupdialog);
+			popUp.setTitle("Input");
+			popUp.setCancelable(true);
+
+			et = (EditText) popUp.findViewById(R.id.Value);
+			et.setInputType(android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+			et.setText("" + m_factor);
+
+			button = (Button) popUp.findViewById(R.id.CloseButton);
+			button.setOnClickListener(new OnClickListener() {
+
+				public void onClick(View v) {
+					popUp.dismiss();
+				}
+			});
+			button = (Button) popUp.findViewById(R.id.OkButton);
+			button.setOnClickListener(new OnClickListener() {
+
+				public void onClick(View v) {
+					View parent = (View) v.getParent();
+
+					String Info = ((TextView) parent.findViewById(R.id.Value))
+							.getText().toString();
+					try {
+						m_factor = Float.parseFloat(Info);
+					} catch (NumberFormatException e) {
+						Log.i("RunningActivity", "resize NumberFormatException "+ e.getMessage());
+					}
+
+					popUp.dismiss();
+					float newfactor = m_factor / oldfactor;
+					float size = ((TextView) findViewById(R.id.DistanceValue)).getTextSize();
+					((TextView) findViewById(R.id.DistanceValue)).setTextSize(TypedValue.COMPLEX_UNIT_PX, size
+							* newfactor);
 				}
 			});
 
