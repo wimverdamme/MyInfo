@@ -425,7 +425,7 @@ public class RunningActivity extends Activity {
 	}
 
 	public enum MenuItemIds {
-		RejectPassedItemId, ResizeTextItemId, ResizedistanceId, WarningSecsItemId, RecordPointsItemId, ExitMenuItemId
+		RejectPassedItemId, ResizeTextItemId, ResizedistanceId, WarningSecsItemId, RecordPointsItemId, ExitMenuItemId, AllwaysOnItemId
 	}
 
 	@Override
@@ -453,6 +453,9 @@ public class RunningActivity extends Activity {
 					R.string.RecordPoints);
 			RecordPointsItem.setCheckable(true);
 			RecordPointsItem.setChecked(RecordPoints);
+			
+			menu.add(Menu.NONE, MenuItemIds.AllwaysOnItemId.ordinal(),
+					Menu.NONE, R.string.Debugmode);
 		}
 		menu.add(Menu.NONE, MenuItemIds.ExitMenuItemId.ordinal(), Menu.NONE,
 				R.string.Exit);
@@ -482,6 +485,56 @@ public class RunningActivity extends Activity {
 			SaveRecordedPoints();
 			Toast.makeText(this, "Stopped", Toast.LENGTH_SHORT).show();
 			finish();
+			break;
+		case AllwaysOnItemId:
+			popUp = new Dialog(RunningActivity.this);
+			popUp.setContentView(R.layout.popupdialog);
+			popUp.setTitle("DEBUG");
+			popUp.setCancelable(true);
+
+			et = (EditText) popUp.findViewById(R.id.Value);
+			et.setInputType(android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+			et.setText("0" );
+
+			button = (Button) popUp.findViewById(R.id.CloseButton);
+			button.setOnClickListener(new OnClickListener() {
+
+				public void onClick(View v) {
+					popUp.dismiss();
+				}
+			});
+			button = (Button) popUp.findViewById(R.id.OkButton);
+			button.setOnClickListener(new OnClickListener() {
+
+				public void onClick(View v) {
+					View parent = (View) v.getParent();
+
+					String Info = ((TextView) parent.findViewById(R.id.Value))
+							.getText().toString();
+					int debug=0;
+					try {
+						debug = Integer.parseInt(Info);
+					} catch (NumberFormatException e) {
+						Log.i("RunningActivity", "resize NumberFormatException "+ e.getMessage());
+					}
+
+					popUp.dismiss();
+
+					if (debug==42)
+					{
+						extended=true;
+						Visibility(View.VISIBLE);
+						unregisterReceiver(mBatInfoReceiver);
+					}
+					else
+					{
+						registerReceiver(mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+					}
+
+				}
+			});
+
+			popUp.show();
 			break;
 		case ResizeTextItemId:
 			popUp = new Dialog(RunningActivity.this);
@@ -532,7 +585,7 @@ public class RunningActivity extends Activity {
 
 			et = (EditText) popUp.findViewById(R.id.Value);
 			et.setInputType(android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
-			et.setText("" + m_factor);
+			et.setText("" + m_factor2);
 
 			button = (Button) popUp.findViewById(R.id.CloseButton);
 			button.setOnClickListener(new OnClickListener() {
@@ -550,13 +603,13 @@ public class RunningActivity extends Activity {
 					String Info = ((TextView) parent.findViewById(R.id.Value))
 							.getText().toString();
 					try {
-						m_factor = Float.parseFloat(Info);
+						m_factor2 = Float.parseFloat(Info);
 					} catch (NumberFormatException e) {
 						Log.i("RunningActivity", "resize NumberFormatException "+ e.getMessage());
 					}
 
 					popUp.dismiss();
-					float newfactor = m_factor / oldfactor;
+					float newfactor = m_factor2 / oldfactor;
 					float size = ((TextView) findViewById(R.id.DistanceValue)).getTextSize();
 					((TextView) findViewById(R.id.DistanceValue)).setTextSize(TypedValue.COMPLEX_UNIT_PX, size
 							* newfactor);
@@ -628,6 +681,7 @@ public class RunningActivity extends Activity {
 	}
 
 	private float m_factor = 1;
+	private float m_factor2 = 1;
 	private int WarningSecs = 5;
 	private SharedPreferences mPrefs;
 
