@@ -16,6 +16,8 @@
     <string name="UpdateTime">UpdateTime</string>
     <string name="Plugged">Plugged</string>
     <string name="Unplugged">Unplugged</string>
+    <string name="AC_On">AC on</string>
+    <string name="AC_Off">AC off</string>
     <string name="Convert">Convert</string>
     <string name="Distance">Distance</string>
     <string name="Direction">Direction</string>
