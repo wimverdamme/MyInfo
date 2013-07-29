@@ -52,7 +52,7 @@ public class RunningActivity extends Activity {
 	private LocationManager locManager;
 	private MyLocationListener locListener = new MyLocationListener(this);
 	private boolean isPlugged = false;
-	private CopyOnWriteArrayList<Poi> PoiList = MyInfoActivity.PoiList;
+	private CopyOnWriteArrayList<Poi> PoiList = MyInfoActivity.ClosePoiList;
 	private ArrowDirectionView Arrow;
 	private Sound sound;
 
@@ -394,7 +394,26 @@ public class RunningActivity extends Activity {
 					locManager.requestLocationUpdates(
 							LocationManager.GPS_PROVIDER, 0, 0, locListener);
 				}
-
+				
+				float distance=location.distanceTo(MyInfoActivity.LastRecalculationLocation);
+				boolean recalculate=false;
+				if (distance > 80000)
+					recalculate=true;
+				else
+				{
+					if (distance > 30000) 
+					{
+						Location.distanceBetween(MyInfoActivity.LastRecalculationLocation.getLatitude(), MyInfoActivity.LastRecalculationLocation.getLongitude(),
+								p.getLatitudeE6() / (double) 1E6,
+								p.getLongitudeE6() / (double) 1E6, results);	
+						if (results[0]>5000)
+						{
+							recalculate=true;
+						}
+					}
+				}
+				if (recalculate)
+					MyInfoActivity.Recalculate();
 			}
 			ReleaseLock();
 		}
