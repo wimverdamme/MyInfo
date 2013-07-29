@@ -118,7 +118,7 @@ public class RunningActivity extends Activity {
 		((TextView) findViewById(R.id.PoiIdValue)).setText("");
 
 		if (gps_enabled) {
-			locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
+			locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 900,
 					0, locListener);
 		}
 
