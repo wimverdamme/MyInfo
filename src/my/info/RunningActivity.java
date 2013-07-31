@@ -420,6 +420,8 @@ public class RunningActivity extends Activity {
 
 		public Poi findClosedPoi(double Latitude, double Longitude,
 				float Bearing) {
+			if (PoiList.size()==0)
+				return new Poi(0, 0, "");
 			Poi closestPoi = PoiList.get(0);
 			float[] results = new float[3];
 			Location.distanceBetween(Latitude, Longitude,

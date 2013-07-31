@@ -198,6 +198,8 @@ public class MyInfoActivity extends Activity {
 		// Or use LocationManager.GPS_PROVIDER		
 
 		Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+		if (lastKnownLocation==null)
+			lastKnownLocation=new Location(locationProvider);
 		ArrayList<Poi> tempClosePoiList = new ArrayList<Poi>();
 		for  (Poi p : PoiList) {		
 			float[] results = new float[3];
