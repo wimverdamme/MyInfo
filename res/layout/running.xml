@@ -4,6 +4,49 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:stretchColumns="1" >
+    
+
+
+    <TableRow
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/ChargerConnected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:padding="2dip"
+            android:text="@string/ChargerConnected" />
+
+        <TextView
+            android:id="@+id/ChargerConnectedValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            
+            android:padding="1dip" />
+        
+        <TextView
+            android:id="@+id/NrPoi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:padding="2dip"
+            android:text="@string/NrPoi" />
+
+        <TextView
+            android:id="@+id/NrPoiValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            
+            android:padding="1dip" />
+        
+    </TableRow>
+    
+          <View
+        android:layout_width="wrap_content"
+        android:layout_height="2dip"
+        android:background="#FF909090" />
 
     <TableRow
         android:layout_width="wrap_content"
@@ -145,30 +188,7 @@
             android:padding="3dip" />
     </TableRow>
 
-    <View
-        android:layout_width="wrap_content"
-        android:layout_height="2dip"
-        android:background="#FF909090" />
-
-    <TableRow
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
-
-        <TextView
-            android:id="@+id/ChargerConnected"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_column="1"
-            android:padding="3dip"
-            android:text="@string/ChargerConnected" />
-
-        <TextView
-            android:id="@+id/ChargerConnectedValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:padding="3dip" />
-    </TableRow>
+  
 
     <View
         android:id="@+id/Separation1"

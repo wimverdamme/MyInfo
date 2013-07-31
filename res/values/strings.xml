@@ -6,7 +6,7 @@
     <string name="LabelYes">Yes</string>
     <string name="LabelNo">No</string>
     <string name="LabelAll">All</string>
-    <string name="ChargerConnected">ChargerConnected</string>
+    <string name="ChargerConnected">Power</string>
     <string name="LastWarning">Last Warning</string>
     <string name="PoiId">Poi Id</string>
     <string name="Longitude">Longitude</string>
@@ -48,6 +48,7 @@
     <string name="About">About&#8230;</string>
     <string name="HistoryDays">History Days</string>
     <string name="ResizeDistance">ResizeDistance</string>
+    <string name="NrPoi">Nr</string>
     
 
 </resources>

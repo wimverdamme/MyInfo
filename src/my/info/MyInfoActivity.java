@@ -212,6 +212,7 @@ public class MyInfoActivity extends Activity {
 		}
 		LastRecalculationLocation=lastKnownLocation;
 		ClosePoiList = new CopyOnWriteArrayList<Poi>(tempClosePoiList);
+		RunningActivity.PoiList = ClosePoiList;
 	}
 	
 	public static boolean Recalculating = false;

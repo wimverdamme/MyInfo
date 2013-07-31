@@ -52,7 +52,7 @@ public class RunningActivity extends Activity {
 	private LocationManager locManager;
 	private MyLocationListener locListener = new MyLocationListener(this);
 	private boolean isPlugged = false;
-	private CopyOnWriteArrayList<Poi> PoiList = MyInfoActivity.ClosePoiList;
+	public static CopyOnWriteArrayList<Poi> PoiList = MyInfoActivity.ClosePoiList;
 	private ArrowDirectionView Arrow;
 	private Sound sound;
 
@@ -413,7 +413,10 @@ public class RunningActivity extends Activity {
 					}
 				}
 				if (recalculate)
+				{
 					MyInfoActivity.Recalculate();
+				}
+				((TextView) findViewById(R.id.NrPoiValue)).setText(""+PoiList.size());
 			}
 			ReleaseLock();
 		}
