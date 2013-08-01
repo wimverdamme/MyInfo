@@ -224,6 +224,8 @@ public class RunningActivity extends Activity {
 			int visible = (extended && plugged != 0) ? View.VISIBLE
 					: View.INVISIBLE;
 			Visibility(visible);
+			if (visible==View.INVISIBLE)
+				locManager.removeUpdates(locListener);
 
 		}
 	};
@@ -418,7 +420,7 @@ public class RunningActivity extends Activity {
 				}
 				((TextView) findViewById(R.id.NrPoiValue)).setText(""+PoiList.size());
 			}
-			ReleaseLock();
+			ReleaseLock(); 
 		}
 
 		public Poi findClosedPoi(double Latitude, double Longitude,
