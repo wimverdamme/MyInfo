@@ -1,12 +1,7 @@
 package my.info;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,7 +11,6 @@ import java.util.zip.ZipFile;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,7 +20,6 @@ import android.content.res.AssetManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -50,73 +43,8 @@ public class MyInfoActivity extends Activity {
 			Convert();
 	}
 
-	public void onButtonExportSaveClick(View view) {
-		Intent intent = new Intent(getBaseContext(), FileDialog.class);
-		String PathToSd=Environment.getExternalStorageDirectory().getPath();
-		intent.putExtra(FileDialog.START_PATH, PathToSd);
-
-		// can user select directories or not
-		intent.putExtra(FileDialog.CAN_SELECT_DIR, true);
-		intent.putExtra(FileDialog.SELECT_ONLY_DIR, true);
-
-		if (view.getId() == R.id.SaveButton)
-			startActivityForResult(intent, REQUEST_SAVE);
-	}
-
 	static Context mContext;
-	
-	static final int REQUEST_SAVE = 2;
-	Dialog popUp;
-	
-	public synchronized void onActivityResult(final int requestCode,
-			int resultCode, final Intent data) {
 
-		if (resultCode == Activity.RESULT_OK) {
-			String Action = "";
-			if (requestCode == REQUEST_SAVE) {
-				Action = "Saving to: ";
-			}				
-
-			String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
-			Toast.makeText(this, Action + filePath, Toast.LENGTH_SHORT).show();
-			
-			if (requestCode == REQUEST_SAVE) {
-				File[] files = new File(getCacheDir(), "").listFiles();
-				for (File f : files) {
-					String filename = f.getName();
-					if (filename.endsWith(".sav") || filename.endsWith(".log")) {
-						InputStream in = null;
-						OutputStream out = null;
-						try {
-							in = new FileInputStream(f);
-							out = new FileOutputStream(filePath + "/"
-									+ filename);
-							byte[] buffer = new byte[1024];
-							int read;
-							while ((read = in.read(buffer)) != -1) {
-								out.write(buffer, 0, read);
-							}
-
-							in.close();
-							in = null;
-							out.flush();
-							out.close();
-							out = null;
-						} catch (Exception e) {
-							Log.i("MyInfoActivity",
-									"onActivityResult() save writeGpxFile "
-											+ e.getMessage());
-						}
-					}
-				}
-			}
-			Toast.makeText(this, "Done", Toast.LENGTH_SHORT).show();
-
-		} else if (resultCode == Activity.RESULT_CANCELED) {
-
-		}
-
-	}
 
 	public void onButtonLoadClick(View view) {
 

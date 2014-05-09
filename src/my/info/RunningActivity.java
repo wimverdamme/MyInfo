@@ -230,20 +230,7 @@ public class RunningActivity extends Activity {
 		}
 	};
 
-	class MyDummyLocationListener implements LocationListener {
 
-		public void onLocationChanged(Location location) {
-		}
-
-		public void onProviderDisabled(String provider) {
-		}
-
-		public void onProviderEnabled(String provider) {
-		}
-
-		public void onStatusChanged(String provider, int status, Bundle extras) {
-		}
-	}
 
 	public static class Point {
 		public int LatitudeE6;
